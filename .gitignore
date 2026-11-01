@@ -1,0 +1,11 @@
+node_modules/
+dist/
+release/
+graphify-out/
+.env
+.env.*
+!.env.example
+*.log
+
+# Vendored agent skills (restore with skills-lock.json)
+.claude/skills/
