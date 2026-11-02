@@ -121,6 +121,14 @@ module.exports = [
     id: 'sec-asr-adobe', name: 'ASR: impedir o Adobe Reader de abrir processos', risk: 'safe',
     description: 'PDFs maliciosos não conseguem usar o Adobe Reader para iniciar outros programas.',
   }, ['7674ba52-37eb-4a4f-a9a1-f0f9a1619a2c']),
+  {
+    id: 'sec-wpbt-off', module: 'security',
+    name: 'Ignorar programas injetados pela BIOS (WPBT)',
+    description: 'Algumas placas-mãe e notebooks usam a tabela WPBT do firmware para instalar o próprio software (Armoury Crate, utilitários de fabricante) a cada formatação, sem perguntar. Com isto o Windows ignora esse executável.',
+    impact: 'low', risk: 'moderate', admin: true, restart: 'reboot',
+    warn: 'Antirroubo de fábrica gravado na BIOS (Computrace/Absolute) também deixa de ser reinstalado.',
+    registry: [reg(`${HKLM}SYSTEM\\CurrentControlSet\\Control\\Session Manager`, 'DisableWpbtExecution', 1)],
+  },
 
   // ---------------- Defender (sem desligar a proteção) ----------------
   {
@@ -210,6 +218,16 @@ $dirs = @($dirs | Select-Object -Unique)`;
     impact: 'medium', risk: 'advanced', admin: true, restart: 'reboot',
     warn: 'Desliga WSL 2, Docker, máquinas virtuais Hyper-V, Windows Sandbox, VBS/HVCI e o subsistema Android.',
     script: bcdValue('hypervisorlaunchtype', 'Off'),
+  },
+  {
+    id: 'boot-bsod-details', module: 'boot',
+    name: 'Tela azul com detalhes técnicos',
+    description: 'A tela azul passa a mostrar o código e os parâmetros do erro em vez do rosto triste, o que ajuda a descobrir qual driver travou.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'reboot',
+    registry: [
+      reg(`${HKLM}SYSTEM\\CurrentControlSet\\Control\\CrashControl`, 'DisplayParameters', 1),
+      reg(`${HKLM}SYSTEM\\CurrentControlSet\\Control\\CrashControl`, 'DisableEmoticon', 1),
+    ],
   },
 
   // ---------------- Notificações ----------------

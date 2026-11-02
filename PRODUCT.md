@@ -4,7 +4,7 @@
 
 Quem joga ou usa o PC para trabalho pesado no Windows aplica "tweaks" (registro, serviços, plano de energia) a partir de listas soltas na internet ou de otimizadores pagos que não dizem o que mudam e nem sempre desfazem direito. O ctrl aplica cada ajuste guardando antes o valor original, verifica depois se o Windows desfez algo e permite reverter qualquer alteração — uma por uma, por período ou tudo.
 
-Nome e identidade visual seguem o guia de marca do ctrl (preto e cinzas carvão, tinta branca, acento `#E52249`). Até a versão 0.1 o app se chamava mojoTWEEKS; a 1.0 migra o estado e reconhece os objetos do Windows criados com o nome antigo.
+Nome e identidade visual seguem o guia de marca do ctrl (preto e cinzas carvão, tinta branca, acento ciano `#29CDF2`; vermelho só para erro). Até a versão 0.1 o app se chamava mojoTWEEKS; a 1.0 migra o estado e reconhece os objetos do Windows criados com o nome antigo.
 
 ## Público
 
@@ -20,12 +20,13 @@ Usuários de Windows 10/11 (principalmente gamers) que querem desempenho, privac
 | Verificação | Verificação › Verificar agora | Relê cada tweak aplicado no sistema e marca verificado / desfeito pelo Windows / sem leitura; reaplica com um clique |
 | Desfazer | Histórico › Central de desfazer | Restaura o valor original de um tweak, de tudo aplicado num período ou de tudo |
 | Modo ao vivo | Jogos › Modo ao vivo › ativar + abrir um jogo da biblioteca | Prioridade alta, plano de alto desempenho e timer de 0,5 ms só durante a sessão; tudo restaurado ao fechar |
+| Bandeja | Fechar a janela (opção "Manter na bandeja ao fechar", ligada por padrão) | O app continua rodando na bandeja com a Sentinela e o Modo ao vivo; o ícone reabre a janela e "Sair" encerra de vez |
 | Atualização | Aviso na barra lateral › Baixar atualização | Abre a página da versão nova no GitHub; o usuário instala por cima, estado preservado |
-| Ferramentas | Rede, Sistema, Hardware | Benchmark e troca de DNS reversível, latência/jitter, limpeza, Windows Update, apps de inicialização, MSI, DPC, saúde de disco/bateria, boot |
+| Ferramentas | Rede, Sistema, Hardware | Benchmark e troca de DNS reversível, latência/jitter, bufferbloat (latência sob carga, nota A+ a F), limpeza, Windows Update, apps de inicialização, MSI, DPC, saúde de disco/bateria, boot |
 
 ## Escopo atual
 
-Catálogo de 215 tweaks em 28 módulos, 11 correções (SFC, DISM, rede…) e 6 perfis prontos. Interface em pt-BR com a identidade do ctrl. Instalador NSIS em português, com termos de uso (isenção de responsabilidade) que precisam ser aceitos, e que sempre abre o app como administrador. Licença PolyForm Noncommercial 1.0.0. Código e versões em https://github.com/rodolfoxm/ctrl.
+Catálogo de 241 tweaks em 28 módulos, 12 correções (SFC, DISM, ChkDsk, rede…) , 6 perfis prontos e remoção reversível de 95 apps pré-instalados (Microsoft, parceiros e fabricantes). Interface em pt-BR com a identidade do ctrl. Instalador NSIS em português, com termos de uso (isenção de responsabilidade) que precisam ser aceitos, e que sempre abre o app como administrador. Licença PolyForm Noncommercial 1.0.0. Código e versões em https://github.com/rodolfoxm/ctrl.
 
 ## Fora de escopo
 
@@ -36,7 +37,7 @@ Conta, ativação, telemetria, download ou instalação automática de atualiza�
 - Nenhuma alteração sem backup: registro é snapshotado e restaurado exatamente; scripts guardam o próprio estado anterior.
 - O renderer nunca envia scripts: só um nome de canal IPC e IDs; o processo principal procura o que executar no catálogo.
 - Tweaks que não se aplicam ao hardware (GPU, CPU híbrida, notebook, Windows 11, Wi-Fi, RAM, Defender ativo) ficam ocultos, com o motivo.
-- Sem telemetria. Acessos à rede: os testes pedidos pelo usuário (ping, DNS) e, se a opção estiver ligada (padrão), uma consulta à API de releases do GitHub ao abrir. Nada é baixado sem pedido.
+- Sem telemetria. Acessos à rede: os testes pedidos pelo usuário (ping, DNS, bufferbloat nos servidores de teste da Cloudflare, até ~370 MB) e, se a opção estiver ligada (padrão), uma consulta à API de releases do GitHub ao abrir. Nada é baixado sem pedido.
 
 ## Restrições e decisões técnicas
 

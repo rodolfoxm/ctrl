@@ -6,6 +6,7 @@ import './styles.css';
 import { AppProvider, useApp } from './context.jsx';
 import Shell from './components/Shell.jsx';
 import Onboarding from './components/Onboarding.jsx';
+import Intro from './components/Intro.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Guide from './pages/Guide.jsx';
 import Guardian from './pages/Guardian.jsx';
@@ -61,6 +62,7 @@ function Root() {
         </Routes>
       </ErrorBoundary>
       {settings && !onboarded && <Onboarding />}
+      <Intro />
     </Shell>
   );
 }

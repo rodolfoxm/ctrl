@@ -15,7 +15,7 @@ const state = {
   sweeps: [],
   settings: {
     autoRestorePoint: true, confirmRisky: true, showHidden: false, liveGameMode: false, liveGameModeAsk: true,
-    liveGamePlan: true, liveGameTimer: true, sentinel: true, sentinelRepair: false, startWithWindows: false, checkUpdates: true,
+    liveGamePlan: true, liveGameTimer: true, sentinel: true, sentinelRepair: false, startWithWindows: false, closeToTray: true, intro: true, checkUpdates: true,
   },
   onboarded: (() => {
     try {
@@ -158,7 +158,7 @@ const handlers = {
         { id: 'restore', label: 'Ponto de restauração recente', value: 'ontem', weight: 15, score: 1 },
         { id: 'drift', label: 'Tweaks sem drift', value: state.sweeps[0] ? `${state.sweeps[0].drifted.length} desfeitos` : 'não verificado', weight: 15, score: 0.6 },
         { id: 'disk', label: 'Espaço livre no disco do sistema', value: '41%', weight: 15, score: 1 },
-        { id: 'memory', label: 'Memória disponível agora', value: '58% livre', weight: 10, score: 1 },
+        { id: 'maintenance', label: 'Manutenção nos últimos 30 dias', value: 'limpeza 28/10/2026 · nunca verificou', weight: 10, score: 0.5 },
       ],
       appliedCount: Object.keys(state.applied).length,
       quickWinsMissing: quick.filter((id) => !status[id]),
@@ -272,6 +272,22 @@ const handlers = {
     };
     return { at: now(), results: [mk('1.1.1.1', 9), mk('8.8.8.8', 14)] };
   },
+  'net:bufferbloat': async () => {
+    const phases = [['idle', 1200], ['download', 2000], ['upload', 2000]];
+    for (const [phase, total] of phases) {
+      for (let t = 0; t < total; t += 400) {
+        emit('net:bloat', { phase, elapsed: t, total, bytes: phase === 'idle' ? 0 : t * 4e4 });
+        await wait(400);
+      }
+    }
+    const mk = (base, n = 14) => Array.from({ length: n }, () => base + Math.round(Math.random() * 8));
+    return {
+      ok: true, at: now(), grade: 'B', added: 41,
+      idle: { median: 9, samples: mk(8), lost: 0 },
+      download: { median: 50, samples: mk(44), lost: 0, mbps: 312.4, bytes: 2.5e8, added: 41 },
+      upload: { median: 23, samples: mk(19), lost: 0, mbps: 48.7, bytes: 4.8e7, added: 14 },
+    };
+  },
   'cleaner:scan': async () => {
     await wait(1200);
     const sizes = { 'user-temp': 1.4e9, 'win-temp': 3.2e8, 'wu-cache': 2.1e9, 'delivery-opt': 6.4e8, thumbnails: 1.2e8, 'dx-shader': 4.1e8, 'gpu-shader': 1.1e9, 'crash-dumps': 9.6e7, wer: 3.3e7, logs: 2.2e8, 'browser-chrome': 7.7e8, 'browser-edge': 3.1e8, 'browser-brave': 0, 'browser-firefox': 0, 'recycle-bin': 5.4e8 };
@@ -316,6 +332,8 @@ const handlers = {
     { name: 'Clipchamp.Clipchamp', label: 'Clipchamp', level: 'recommended', installed: true, version: '3.0' },
     { name: 'Microsoft.WindowsMaps', label: 'Mapas', level: 'recommended', installed: false, removedByApp: true, familyName: 'Microsoft.WindowsMaps_8wekyb3d8bbwe' },
     { name: 'Microsoft.YourPhone', label: 'Vincular ao Celular', level: 'optional', installed: true, version: '1.24' },
+    { name: 'king.com.CandyCrushSaga', label: 'Candy Crush Saga', level: 'recommended', installed: true, version: '1.29' },
+    { name: 'MicrosoftWindows.Client.WebExperience', label: 'Widgets', level: 'optional', warn: 'O painel de Widgets (Win+W) e o clima na barra de tarefas somem.', installed: true, version: '525.1' },
     { name: 'Microsoft.WindowsCalculator', label: 'Calculadora', level: 'keep', installed: true, version: '11.2' },
   ]),
   'debloat:remove': async () => (await wait(600), { ok: true }),

@@ -26,6 +26,8 @@ const DEFAULTS = {
     sentinel: true,
     sentinelRepair: false,
     startWithWindows: false,
+    closeToTray: true,
+    intro: true,
     checkUpdates: true,
   },
 };

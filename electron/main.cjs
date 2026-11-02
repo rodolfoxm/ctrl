@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -19,13 +19,107 @@ const sys = require('./tools/system.cjs');
 const health = require('./tools/health.cjs');
 const scheduler = require('./tools/scheduler.cjs');
 const updates = require('./updates.cjs');
+const bufferbloat = require('./tools/bufferbloat.cjs');
 
 const devUrlArg = process.argv.find((a) => a.startsWith('--dev-url='));
 const DEV_URL = process.env.VITE_DEV_SERVER_URL || (devUrlArg ? devUrlArg.slice('--dev-url='.length) : null);
 const TASK = process.argv.find((a) => a.startsWith('--task='))?.slice('--task='.length);
 
 let win = null;
+let tray = null;
+let quitting = false;
 const send = (channel, data) => win && !win.isDestroyed() && win.webContents.send(channel, data);
+const ICON = path.join(__dirname, '..', 'build', 'icon.ico');
+const toTray = () => store.load().settings.closeToTray;
+
+function showWindow() {
+  if (!win) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
+// With "closeToTray" on, closing the window only hides it: the Sentinel and Live mode keep
+// running and the tray icon brings it back. "Sair" in the tray menu is the real exit.
+function syncTray() {
+  if (!toTray()) {
+    tray?.destroy();
+    tray = null;
+    return;
+  }
+  if (tray) return;
+  tray = new Tray(ICON);
+  tray.setToolTip('ctrl');
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: 'Abrir ctrl', click: showWindow },
+      { type: 'separator' },
+      { label: 'Sair', click: quitApp },
+    ]),
+  );
+  tray.on('click', showWindow);
+}
+
+function hideToTray() {
+  win.hide();
+  if (store.load().trayHinted) return;
+  store.update((s) => {
+    s.trayHinted = true;
+  });
+  tray?.displayBalloon({
+    iconType: 'custom',
+    icon: ICON,
+    title: 'O ctrl continua aberto',
+    content: 'Ele segue rodando na bandeja. Para sair de vez, clique com o botão direito no ícone e escolha Sair.',
+  });
+}
+
+// Operations that change the system and shouldn't be cut in half by closing the app.
+const GUARDED = {
+  'tweaks:apply': 'Um ajuste está sendo aplicado',
+  'tweaks:revert': 'Um ajuste está sendo desfeito',
+  'tweaks:applyMany': 'Os ajustes estão sendo aplicados',
+  'tweaks:revertMany': 'Os ajustes estão sendo desfeitos',
+  'actions:run': 'Uma correção está rodando',
+  'profiles:apply': 'Um perfil está sendo aplicado',
+  'profiles:revert': 'Um perfil está sendo desfeito',
+  'games:set': 'Um ajuste de jogo está sendo aplicado',
+  'cleaner:clean': 'A limpeza está rodando',
+  'debloat:remove': 'Um app está sendo removido',
+  'debloat:reinstall': 'Um app está sendo reinstalado',
+  'backups:create': 'O ponto de restauração está sendo criado',
+  'net:setDns': 'O DNS está sendo trocado',
+  'net:revertDns': 'O DNS está sendo restaurado',
+};
+const running = new Map();
+let opSeq = 0;
+let quitConfirmed = false;
+
+async function confirmQuit() {
+  if (quitConfirmed || !running.size || !win) return true;
+  showWindow();
+  const { response } = await dialog.showMessageBox(win, {
+    type: 'warning',
+    title: 'ctrl',
+    message: 'O ctrl ainda está trabalhando',
+    detail: `${[...running.values()][0]}. Fechar agora pode interromper no meio e deixar a alteração pela metade.`,
+    buttons: ['Continuar aberto', 'Sair mesmo assim'],
+    defaultId: 0,
+    cancelId: 0,
+    noLink: true,
+  });
+  quitConfirmed = response === 1;
+  return quitConfirmed;
+}
+
+async function quitApp() {
+  if (!(await confirmQuit())) return;
+  quitting = true;
+  hardware.stopLive(true);
+  sys.timerReset();
+  await livegame.stop();
+  app.quit();
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -44,9 +138,25 @@ function createWindow() {
     },
   });
   win.once('ready-to-show', () => {
-    if (process.argv.includes('--minimized')) win.minimize();
-    else win.show();
+    if (!process.argv.includes('--minimized')) win.show();
+    else if (!toTray()) win.minimize();
   });
+  win.on('close', (e) => {
+    if (quitting) return;
+    if (toTray()) {
+      e.preventDefault();
+      hideToTray();
+    } else if (running.size && !quitConfirmed) {
+      e.preventDefault();
+      confirmQuit().then((ok) => ok && win.close());
+    }
+  });
+  // Windows is shutting down or logging off: let the window close instead of hiding.
+  win.on('query-session-end', () => {
+    quitting = true;
+  });
+  win.on('hide', () => hardware.pauseLive(true));
+  win.on('show', () => hardware.pauseLive(false));
   win.on('maximize', () => send('win:state', { maximized: true }));
   win.on('unmaximize', () => send('win:state', { maximized: false }));
   // Never navigate the app window away; external links open in the browser.
@@ -60,10 +170,14 @@ function createWindow() {
 
 function handle(channel, fn) {
   ipcMain.handle(channel, async (_e, ...args) => {
+    const op = GUARDED[channel] && ++opSeq;
+    if (op) running.set(op, GUARDED[channel]);
     try {
       return await fn(...args);
     } catch (err) {
       return { ok: false, error: err?.message || String(err) };
+    } finally {
+      if (op) running.delete(op);
     }
   });
 }
@@ -196,14 +310,20 @@ handle('dashboard:summary', async () => {
   const hw = await staticInfo().catch(() => null);
   const sysVol = hw?.volumes?.find((v) => v.letter === 'C:') || hw?.volumes?.[0];
   const freePct = sysVol ? Math.round((sysVol.free / sysVol.size) * 100) : null;
-  const memPct = Math.round((1 - os.freemem() / os.totalmem()) * 100);
+  // Maintenance recency: the last cleanup and the last integrity check (SFC, DISM or ChkDsk) that worked.
+  const lastOk = (pred) => s.history.find((h) => h.ok && pred(h))?.at;
+  const days = (iso) => (iso ? (Date.now() - new Date(iso).getTime()) / 864e5 : Infinity);
+  const lastClean = lastOk((h) => h.action === 'clean');
+  const lastCheck = lastOk((h) => h.action === 'run' && ['sfc', 'dism', 'chkdsk-scan'].includes(h.id));
+  const fresh = (iso) => (days(iso) <= 30 ? 1 : days(iso) <= 90 ? 0.5 : 0);
+  const maintValue = [lastClean ? `limpeza ${new Date(lastClean).toLocaleDateString('pt-BR')}` : 'nunca limpou', lastCheck ? `verificação ${new Date(lastCheck).toLocaleDateString('pt-BR')}` : 'nunca verificou'].join(' · ');
 
   const factors = [
     { id: 'quick', label: 'Otimizações essenciais ativas', value: `${quickActive.length}/${eligibleQuick.length}`, weight: 45, score: eligibleQuick.length ? quickActive.length / eligibleQuick.length : 1 },
     { id: 'restore', label: 'Ponto de restauração recente', value: lastPoint ? lastPoint.toLocaleDateString('pt-BR') : 'nenhum', weight: 15, score: pointFresh ? 1 : bk.enabled ? 0.4 : 0 },
     { id: 'drift', label: 'Tweaks sem drift', value: lastSweep ? `${lastSweep.drifted.length} desfeitos` : 'não verificado', weight: 15, score: lastSweep ? (lastSweep.drifted.length ? 0.3 : 1) : 0.6 },
     { id: 'disk', label: 'Espaço livre no disco do sistema', value: freePct != null ? `${freePct}%` : '—', weight: 15, score: freePct == null ? 0.5 : Math.min(1, freePct / 20) },
-    { id: 'memory', label: 'Memória disponível agora', value: `${100 - memPct}% livre`, weight: 10, score: Math.min(1, (100 - memPct) / 30) },
+    { id: 'maintenance', label: 'Manutenção nos últimos 30 dias', value: maintValue, weight: 10, score: (fresh(lastClean) + fresh(lastCheck)) / 2 },
   ];
   const score = Math.round(factors.reduce((a, f) => a + f.weight * f.score, 0));
   return {
@@ -367,6 +487,13 @@ handle('net:benchmark', () => net.benchmark());
 handle('net:setDns', (id) => net.setProvider(id));
 handle('net:revertDns', () => net.revertDns());
 handle('net:latency', (hosts) => net.latency(hosts));
+let bloatRun = null;
+handle('net:bufferbloat', () => {
+  bloatRun ??= bufferbloat.run((p) => send('net:bloat', p)).finally(() => {
+    bloatRun = null;
+  });
+  return bloatRun;
+});
 
 // ---------- Sistema ----------
 handle('cleaner:scan', () => cleaner.scan());
@@ -415,6 +542,7 @@ handle('settings:set', async (patch) => {
   const before = store.load().settings;
   const next = store.update((s) => Object.assign(s.settings, patch)).settings;
   if ('sentinel' in patch) startSentinel();
+  if ('closeToTray' in patch) syncTray();
   if ('startWithWindows' in patch && patch.startWithWindows !== before.startWithWindows) {
     try {
       await (patch.startWithWindows ? scheduler.create('app-logon') : scheduler.remove('app-logon'));
@@ -480,21 +608,15 @@ if (TASK) {
 } else if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
-    if (!win) return;
-    if (win.isMinimized()) win.restore();
-    win.show();
-    win.focus();
+  app.on('second-instance', showWindow);
+  app.on('before-quit', () => {
+    quitting = true;
   });
   app.whenReady().then(() => {
     createWindow();
+    syncTray();
     startSentinel();
     if (store.load().settings.liveGameMode) livegame.start((e) => send('livegame:event', e));
   });
-  app.on('window-all-closed', async () => {
-    hardware.stopLive(true);
-    sys.timerReset();
-    await livegame.stop();
-    app.quit();
-  });
+  app.on('window-all-closed', quitApp);
 }

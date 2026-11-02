@@ -25,7 +25,7 @@ sempre conseguem desfazer. O ctrl foi feito ao contrário:
   exatamente esse valor: um ajuste, tudo o que foi feito num período ou tudo de uma vez.
 - **Ele confere se o Windows desfez.** As atualizações do Windows costumam reverter ajustes sem avisar.
   A **Verificação** relê cada alteração direto do sistema e reaplica com um clique. A **Sentinela** faz isso
-  sozinha a cada 30 minutos.
+  sozinha a cada 30 minutos, inclusive com a janela fechada: o ctrl fica na bandeja, ao lado do relógio.
 - **Feito para a sua máquina.** O ctrl detecta CPU, GPU, notebook ou desktop, Windows 10 ou 11, Wi-Fi e
   mais. O que não serve para o seu hardware fica oculto, e ele explica o motivo.
 - **Sem conta e sem telemetria.** Nada sai do seu PC. A rede só é usada nos testes que você pede e, se a
@@ -36,7 +36,7 @@ sempre conseguem desfazer. O ctrl foi feito ao contrário:
 | | |
 |---|---|
 | **Visão geral** | Saúde do sistema de 0 a 100 com a conta explicada, otimização recomendada com um clique (só ajustes essenciais e seguros), CPU, GPU, RAM, rede e disco ao vivo |
-| **Ajustes** | **215 ajustes em 28 módulos.** Desempenho (CPU, GPU, memória, armazenamento, tela, energia, monitor ao vivo, latência de drivers/DPC), Rede (latência e jitter, benchmark e troca de DNS reversível, TCP e placa de rede), Sistema (11 correções como SFC e DISM, limpeza, Windows Update, privacidade, Windows 11, serviços, inicialização, apps embutidos) e Hardware (especificações, saúde dos discos e da bateria, tempo de boot) |
+| **Ajustes** | **241 ajustes em 28 módulos.** Desempenho (CPU, GPU, memória, armazenamento, tela, energia, monitor ao vivo, latência de drivers/DPC), Rede (latência e jitter, teste de bufferbloat, benchmark e troca de DNS reversível, TCP e placa de rede), Sistema (12 correções como SFC, DISM e ChkDsk, limpeza, Windows Update, privacidade, Windows 11, serviços, inicialização, remoção de apps pré-instalados) e Hardware (especificações, saúde dos discos e da bateria, tempo de boot) |
 | **Perfis** | Competitivo, Equilibrado, Privacidade, Segurança reforçada, Notebook e PC modesto, ou os seus. O que não se aplica à máquina é pulado. Importa e exporta |
 | **Jogos** | Biblioteca de jogos (Steam, Epic ou manual) com ajustes por executável, e o **Modo ao vivo**: prioridade alta, plano de alto desempenho e timer de 0,5 ms só enquanto o jogo está aberto, tudo restaurado ao fechar. Sem injeção, compatível com anti-cheat |
 | **Verificação** | Relê cada ajuste aplicado e mostra o que está ok, o que o Windows desfez e o que não dá para ler. Reaplica com um clique e aponta os reincidentes |

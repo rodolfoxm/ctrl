@@ -7,7 +7,7 @@
 | `npm run verify` | tudo abaixo, nesta ordem | antes de dar uma mudança por pronta |
 | `npm run lint` | ESLint 10 (recomendado + react-hooks + `quality/max-lines`) sem erros | toda mudança em JS/JSX |
 | `npm run verify-rules` | self-check das regras copiadas do toolkit (RuleTester) | ao mexer em `eslint-rules/` |
-| `npm run check` | catálogo: IDs, módulos, perfis, conflitos e **sintaxe de todo PowerShell gerado** (parser, sem executar) | toda mudança em `electron/catalog/` ou no motor |
+| `npm run check` | catálogo: IDs, módulos, perfis, conflitos, **escritas de registro sobrepostas** entre tweaks não conflitantes e **sintaxe de todo PowerShell gerado** (parser, sem executar) | toda mudança em `electron/catalog/` ou no motor |
 | `npm run build` | build do renderer (Vite) | toda mudança em `src/` |
 | `node scripts/smoke-readonly.cjs` | todas as verificações e ferramentas somente leitura na máquina real | mudanças no motor, em `check`, ferramentas ou `ps.cjs` |
 

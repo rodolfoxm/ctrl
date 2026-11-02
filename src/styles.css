@@ -12,28 +12,28 @@
   --border: #ffffff0d;
   --border-hover: #ffffff17;
   --border-strong: #ffffff26;
-  --accent: #e52249;
-  --accent-hover: #f0385d;
-  --accent-ink: #ffffff;
-  --accent-muted: #e522491f;
-  --accent-subtle: #e5224912;
-  --border-accent: #e5224966;
+  --accent: #29cdf2;
+  --accent-hover: #5ad9f5;
+  --accent-ink: #00141a;
+  --accent-muted: #29cdf21f;
+  --accent-subtle: #29cdf212;
+  --border-accent: #29cdf266;
   --text-1: #ffffff;
   --text-2: #a3a3a3;
   --text-3: #6e6e6e;
   --text-4: #3a3a3a;
-  --success: #e52249;
-  --success-muted: #e522491a;
+  --success: #29cdf2;
+  --success-muted: #29cdf21a;
   --warning: #f5b941;
   --warning-muted: #f5b9411a;
-  --danger: #ff7a45;
-  --danger-muted: #ff7a451a;
+  --danger: #ff4d5e;
+  --danger-muted: #ff4d5e1a;
   --info: #d4d4d4;
   --info-muted: #d4d4d41a;
-  --c-cpu: #e52249;
+  --c-cpu: #29cdf2;
   --c-ram: #ffffff;
   --c-gpu: #a3a3a3;
-  --c-net: #e52249;
+  --c-net: #29cdf2;
   --c-disk: #6e6e6e;
   --topbar: 48px;
   --sidebar: 232px;
@@ -234,7 +234,7 @@ kbd {
 .btn-ghost { background: transparent; color: var(--text-2); }
 .btn-ghost:hover:not(:disabled) { background: #ffffff0d; color: var(--text-1); }
 .btn-danger { background: var(--danger-muted); color: var(--danger); }
-.btn-danger:hover:not(:disabled) { background: #ff7a4529; }
+.btn-danger:hover:not(:disabled) { background: #ff4d5e29; }
 .btn-success { background: var(--success-muted); color: var(--success); }
 .btn-sm { height: 30px; padding: 0 12px; font-size: 12.5px; }
 .btn-xs { height: 26px; padding: 0 10px; font-size: 12px; border-radius: var(--r-sm); }
@@ -336,7 +336,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
   background: var(--surface-0); border: 1px solid var(--border); border-radius: var(--r-lg); transition: border-color 0.14s;
 }
 .tweak:hover { border-color: var(--border-hover); }
-.tweak.on { border-color: #e5224940; }
+.tweak.on { border-color: #29cdf240; }
 .tweak.hidden-tweak { opacity: 0.55; }
 .check { flex-shrink: 0; cursor: pointer; width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border-strong); background: transparent; display: grid; place-items: center; padding: 0; color: #fff; }
 .check.checked { background: var(--accent); border-color: var(--accent); }
@@ -437,8 +437,23 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .palette-item .kind { margin-left: auto; font-size: 11.5px; color: var(--text-3); }
 .palette-section { font-size: 12px; font-weight: 600; color: var(--text-3); padding: 10px 12px 4px; }
 
-.progress-card { width: min(460px, calc(100vw - 40px)); }
+.intro { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #171717; cursor: pointer; } /* the video's own background */
+.intro video { width: 100%; height: 100%; object-fit: contain; }
+.intro.out { animation: intro-out 0.35s var(--ease) forwards; }
+@keyframes intro-out { to { opacity: 0; } }
+
+.bloat-grade { display: grid; justify-items: center; gap: 6px; min-width: 96px; padding: 14px 10px; border-radius: var(--r-lg); background: var(--surface-2); }
+.bloat-grade strong { font-size: 44px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+
+.progress-card { width: min(520px, calc(100vw - 40px)); }
 .progress-card .meter { height: 8px; margin: 14px 0 8px; }
+.meter.indeterminate > div { width: 35%; animation: indeterminate 1.3s var(--ease) infinite; }
+@keyframes indeterminate { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
+.progress-steps { display: flex; gap: 6px; list-style: none; margin: 16px 0 2px; padding: 0; counter-reset: step; }
+.progress-steps li { flex: 1; white-space: nowrap; font-size: 12px; color: var(--text-3); padding-top: 8px; border-top: 2px solid var(--surface-3); counter-increment: step; }
+.progress-steps li::before { content: counter(step) '. '; }
+.progress-steps li.done { color: var(--text-2); border-color: var(--accent-muted); }
+.progress-steps li.current { color: var(--text-1); border-color: var(--accent); font-weight: 600; }
 
 /* ---------------- Charts ---------------- */
 .spark { display: block; width: 100%; }
@@ -497,6 +512,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   .wordmark .wm-cursor { animation: none; }
+  .intro.out { animation-duration: 0.35s !important; }
 }
 /* The "c" mark (app icon): the bracket sits just above the x-height, as in the icon. */
 .logo-mark .wordmark { transform: translate(-0.04em, -0.12em); }

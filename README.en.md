@@ -27,7 +27,7 @@ undo it. ctrl works the other way around:
   back exactly that value: one tweak, everything from a time window, or everything at once.
 - **It checks whether Windows undid it.** Windows updates often revert tweaks silently. **Verification**
   re-reads every change straight from the system and re-applies it in one click. The **Sentinel** does it on
-  its own every 30 minutes.
+  its own every 30 minutes, even with the window closed: ctrl stays in the system tray.
 - **Made for your machine.** ctrl detects CPU, GPU, laptop or desktop, Windows 10 or 11, Wi-Fi and more.
   Tweaks that don't fit your hardware are hidden, with the reason shown.
 - **No account, no telemetry.** Nothing leaves your PC. The network is only used for tests you ask for and,
@@ -38,7 +38,7 @@ undo it. ctrl works the other way around:
 | | |
 |---|---|
 | **Overview** | System health from 0 to 100 with the score explained, one-click recommended optimization (essential, safe tweaks only), live CPU, GPU, RAM, network and disk |
-| **Tweaks** | **215 tweaks in 28 modules.** Performance (CPU, GPU, memory, storage, display, power, live monitor, driver latency/DPC), Network (latency and jitter, reversible DNS benchmark and switch, TCP and adapter), System (11 fixes such as SFC and DISM, cleanup, Windows Update, privacy, Windows 11, services, startup, built-in apps) and Hardware (specs, disk and battery health, boot time) |
+| **Tweaks** | **241 tweaks in 28 modules.** Performance (CPU, GPU, memory, storage, display, power, live monitor, driver latency/DPC), Network (latency and jitter, bufferbloat test, reversible DNS benchmark and switch, TCP and adapter), System (12 fixes such as SFC, DISM and ChkDsk, cleanup, Windows Update, privacy, Windows 11, services, startup, removal of preinstalled apps) and Hardware (specs, disk and battery health, boot time) |
 | **Profiles** | Competitive, Balanced, Privacy, Hardened, Laptop and Low-end PC, or your own. Whatever doesn't apply to the machine is skipped. Import and export |
 | **Games** | Game library (Steam, Epic or manual) with per-executable tweaks, and **Live mode**: high priority, high-performance power plan and 0.5 ms timer only while the game runs, all restored when it closes. No injection, anti-cheat friendly |
 | **Verification** | Re-reads every applied tweak and shows what is fine, what Windows undid and what can't be read. Re-applies in one click and points out repeat offenders |

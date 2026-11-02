@@ -15,7 +15,8 @@ export default function AppsView() {
   const list = useAsync(() => call('debloat:scan'), []);
   const [busy, setBusy] = useState(null);
   const remove = async (a) => {
-    if (a.level === 'keep' && !(await confirm(`Remover ${a.label}?`, 'Este app é usado por outros recursos do Windows. Você pode reinstalá-lo depois por aqui ou pela Microsoft Store.', { confirmLabel: 'Remover', danger: true }))) return;
+    const body = `${a.warn ? `${a.warn}\n\n` : ''}Você pode reinstalá-lo depois por aqui ou pela Microsoft Store.`;
+    if ((a.level === 'keep' || a.warn) && !(await confirm(`Remover ${a.label}?`, body, { confirmLabel: 'Remover', danger: true }))) return;
     setBusy(a.name);
     const res = await call('debloat:remove', a.name);
     setBusy(null);
@@ -53,6 +54,7 @@ export default function AppsView() {
                     <td>
                       <div style={{ fontWeight: 550 }}>{a.label}</div>
                       <div className="tiny dim mono">{a.name}{a.version ? ` · ${a.version}` : ''}</div>
+                      {a.warn && <div className="tiny" style={{ color: 'var(--warning)', marginTop: 2 }}>{a.warn}</div>}
                     </td>
                     <td className="num">
                       {a.installed ? (

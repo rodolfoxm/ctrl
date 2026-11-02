@@ -38,7 +38,9 @@ function General() {
       <Card title="Comportamento" icon={Cog}>
         <Row title="Sentinela" desc="Verifica a cada 30 minutos se o Windows desfez algum tweak.">{sw('sentinel')}</Row>
         <Row title="Reparo automático" desc="Reaplica sozinho os tweaks que o Sentinela encontrar desfeitos.">{sw('sentinelRepair', { disabled: !settings.sentinel })}</Row>
-        <Row title="Iniciar com o Windows" desc="Abre minimizado ao entrar (necessário para o Sentinela e o Modo Jogo ao Vivo funcionarem sem abrir o app).">{sw('startWithWindows', { disabled: !info?.isAdmin })}</Row>
+        <Row title="Animação de abertura" desc="Mostra a animação do ctrl ao abrir o app. Um clique ou qualquer tecla pula.">{sw('intro')}</Row>
+        <Row title="Manter na bandeja ao fechar" desc="Fechar a janela deixa o ctrl rodando ao lado do relógio, com o Sentinela e o Modo ao vivo ativos. Para sair, use Sair no ícone da bandeja.">{sw('closeToTray')}</Row>
+        <Row title="Iniciar com o Windows" desc="Abre em segundo plano ao entrar (na bandeja, ou minimizado se a opção acima estiver desligada), para o Sentinela e o Modo ao vivo funcionarem sem abrir o app.">{sw('startWithWindows', { disabled: !info?.isAdmin })}</Row>
       </Card>
     </div>
   );

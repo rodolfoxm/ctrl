@@ -3,16 +3,23 @@
 ## Direção
 
 Interface em pt-BR para Windows desktop (janela mínima 1040×660), seguindo o guia de marca do **ctrl**: fundo quase preto, barra lateral
-e cartões em cinzas carvão separados por um degrau de tom, tinta branca e **um acento, `#E52249`**, usado em status e dados (saúde do
-sistema, interruptores ligados, gráficos ao vivo, confirmações). O botão principal de cada tela é branco com texto preto. Sem gradientes,
+e cartões em cinzas carvão separados por um degrau de tom, tinta branca e **um acento, ciano `#29CDF2`**, usado em status e dados (saúde do
+sistema, interruptores ligados, gráficos ao vivo, confirmações). O botão principal de cada tela é branco com texto preto; sobre o acento, o texto é escuro (`--accent-ink`). Sem gradientes,
 brilhos ou vidro: superfícies planas.
 
 Navegação como no guia: Visão geral, Ajustes, Perfis, Jogos, Verificação, Histórico e Configurações; Agendador, Guia e Sobre ficam no pé da
 barra lateral. "Ajustes" agrupa Desempenho, Rede, Sistema, Hardware e o catálogo completo num seletor acima de cada área; o Modo ao vivo
 virou uma aba de Jogos.
 
-Cores de alerta: âmbar (`--warning`) para avisos e laranja (`--danger`) para erros e ações destrutivas, para não se confundirem com o
-acento. O selo de risco "Seguro" é neutro pelo mesmo motivo.
+Cores de alerta: âmbar (`--warning`) para avisos e vermelho (`--danger`) para erros e ações destrutivas. Até a 1.0 o acento era vermelho
+(`#E52249`) e não dava para distinguir o que estava certo do que estava com erro; por isso ele virou ciano e o vermelho ficou só para
+erro. O selo de risco "Seguro" é neutro.
+
+Abertura: `src/components/Intro.jsx` toca `src/assets/intro.mp4` (1280×720, fundo `#171717`, o mesmo do overlay) uma vez por
+abertura; clique ou tecla pula, e a opção "Animação de abertura" desliga. Não toca se a janela abrir escondida (bandeja).
+
+Operações em lote mostram o overlay de progresso com etapas (ponto de restauração → aplicando → conferindo); etapas sem contagem usam a
+barra indeterminada.
 
 ## Sistema existente
 
@@ -39,7 +46,7 @@ acento. O selo de risco "Seguro" é neutro pelo mesmo motivo.
 
 Carregando (spinner/`Loading`), vazio (`Empty`), erro (toast e `ErrorBoundary` por tela), "sem leitura" para ajustes cujo estado não pode
 ser lido, "oculto" com o motivo para ajustes que não se aplicam à máquina, falta de administrador (selo no topo + "Reabrir como
-administrador") e versão nova disponível (cartão no pé da barra lateral e aba Configurações › Atualizações).
+administrador") janela fechada para a bandeja (aviso do Windows só na primeira vez; leituras ao vivo pausadas enquanto escondida) e versão nova disponível (cartão no pé da barra lateral e aba Configurações › Atualizações).
 
 ## Revisões feitas
 

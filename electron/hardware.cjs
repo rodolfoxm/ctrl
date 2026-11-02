@@ -133,9 +133,10 @@ let timer = null;
 let lastPs = {};
 let prev = cpuTimes();
 
-function startLive(send) {
-  subscribers++;
-  if (timer) return;
+let liveSend = null;
+
+function run() {
+  prev = cpuTimes();
   stopPs = streamPowerShell(LIVE_SCRIPT, (line) => {
     try {
       lastPs = JSON.parse(line);
@@ -150,7 +151,7 @@ function startLive(send) {
     prev = now;
     const cpu = Math.round(perCore.reduce((a, b) => a + b, 0) / perCore.length);
     const total = os.totalmem();
-    send({
+    liveSend({
       at: Date.now(),
       cpu,
       perCore,
@@ -162,13 +163,29 @@ function startLive(send) {
   }, 1000);
 }
 
-function stopLive(force = false) {
-  subscribers = force ? 0 : Math.max(0, subscribers - 1);
-  if (subscribers > 0) return;
+function halt() {
   clearInterval(timer);
   timer = null;
   if (stopPs) stopPs();
   stopPs = null;
+}
+
+function startLive(send) {
+  subscribers++;
+  liveSend = send;
+  if (!timer) run();
+}
+
+function stopLive(force = false) {
+  subscribers = force ? 0 : Math.max(0, subscribers - 1);
+  if (subscribers === 0) halt();
+}
+
+// While the window sits hidden in the tray nobody sees the numbers, so the stream stops
+// and comes back for the screens that are still subscribed.
+function pauseLive(paused) {
+  if (paused) halt();
+  else if (subscribers > 0 && !timer) run();
 }
 
 function topProcesses() {
@@ -177,4 +194,4 @@ function topProcesses() {
   );
 }
 
-module.exports = { getStatic, startLive, stopLive, topProcesses };
+module.exports = { getStatic, startLive, stopLive, pauseLive, topProcesses };

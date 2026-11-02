@@ -47,6 +47,11 @@ const ACTIONS = [
     run: `$out = sfc /scannow | Out-String; $clean = ($out -replace "\\x00", ''); ($clean -split "\\r?\\n" | Where-Object { $_.Trim() } | Select-Object -Last 3) -join ' '`,
   },
   {
+    id: 'chkdsk-scan', name: 'Verificar o disco do sistema (ChkDsk)', group: 'repair', admin: true, timeout: 3600000,
+    description: 'chkdsk /scan: verificação online do NTFS no disco do Windows, sem reiniciar nem bloquear o disco. Se encontrar algo que só dá para reparar offline, avisa.',
+    run: String.raw`chkdsk $env:SystemDrive /scan | Out-Null; $code = $LASTEXITCODE; if ($code -ge 3) { throw "O ChkDsk encontrou erros que precisam de reparo offline. Rode 'chkdsk $env:SystemDrive /spotfix' num terminal de administrador e reinicie." }; if ($code -eq 0) { 'Nenhum problema no sistema de arquivos' } else { 'Disco verificado; pequenos problemas corrigidos' }`,
+  },
+  {
     id: 'dism', name: 'Reparar imagem do Windows (DISM)', group: 'repair', admin: true, timeout: 3600000,
     description: 'DISM /RestoreHealth baixa e substitui componentes corrompidos da imagem do sistema. Rode antes do SFC se ele não conseguir reparar.',
     run: 'DISM /Online /Cleanup-Image /RestoreHealth | Out-Null; if ($LASTEXITCODE) { throw "DISM terminou com código $LASTEXITCODE" }; "Imagem do Windows reparada"',
@@ -149,6 +154,9 @@ const PROFILES = [
       'priv-cloud-clipboard-off', 'priv-edge-background-off', 'w11-copilot-off', 'w11-recall-off', 'w11-widgets-off',
       'w11-start-recommendations-off', 'netpriv-llmnr-off', 'netpriv-wifi-sense-off', 'priv-cross-device-off',
       'w11-suggested-actions-off', 'notif-welcome-off', 'notif-tips-off', 'notif-spotlight-off', 'notif-lockscreen-off', 'feat-recall-off',
+      'priv-promoted-apps-off', 'priv-search-cloud-off', 'priv-handwriting-off', 'priv-app-inventory-off', 'priv-diag-extra-off',
+      'priv-diag-tasks-off', 'priv-language-list-off', 'priv-edge-tracking-off', 'priv-office-telemetry-off', 'explorer-sync-ads-off',
+      'explorer-news-interests-off', 'w11-ai-features-off',
     ],
   },
   {
@@ -157,7 +165,7 @@ const PROFILES = [
     tweaks: [
       'sec-autorun-off', 'sec-wdigest-off', 'sec-restrict-anonymous', 'sec-winrm-off', 'sec-pua-on', 'sec-network-protection',
       'sec-asr-scripts', 'sec-asr-credentials', 'sec-asr-email-usb', 'sec-asr-adobe', 'netpriv-smb1-off', 'netpriv-llmnr-off',
-      'netpriv-remote-registry-off', 'netpriv-remote-assistance-off', 'feat-powershell2-off', 'boot-test-signing-off', 'boot-debug-off',
+      'netpriv-remote-registry-off', 'netpriv-remote-assistance-off', 'feat-powershell2-off', 'boot-test-signing-off', 'boot-debug-off', 'sec-wpbt-off',
     ],
   },
   {

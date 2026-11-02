@@ -106,12 +106,22 @@ export function AppProvider({ children }) {
     [toast],
   );
 
-  /** One restore point per session before the first change, when enabled. */
-  const ensureRestorePoint = useCallback(async () => {
-    if (!settings?.autoRestorePoint || restorePointDone.current || !info?.isAdmin) return true;
-    const id = toast('Criando ponto de restauração antes da primeira alteração…', { duration: 0 });
+  const needsRestorePoint = useCallback(() => !!settings?.autoRestorePoint && !restorePointDone.current && !!info?.isAdmin, [settings, info]);
+
+  /** One restore point per session before the first change, when enabled. It can take a minute,
+   * so the progress overlay stays up the whole time (with `steps` when a batch follows). */
+  const ensureRestorePoint = useCallback(async (steps) => {
+    if (!needsRestorePoint()) return true;
+    setProgress({
+      title: steps ? steps.title : 'Preparando',
+      steps: steps?.labels,
+      step: 0,
+      indeterminate: true,
+      name: 'Criando ponto de restauração do Windows…',
+      detail: 'Pode levar até um minuto. É a rede de segurança caso algo dê errado.',
+    });
     const res = await call('backups:create', 'ctrl - antes das otimizações');
-    dismiss(id);
+    setProgress(null);
     if (res?.ok) {
       restorePointDone.current = true;
       toast('Ponto de restauração criado.', { tone: 'success' });
@@ -124,7 +134,7 @@ export function AppProvider({ children }) {
     );
     if (go) restorePointDone.current = true;
     return go;
-  }, [settings, info, toast, dismiss, confirm]);
+  }, [needsRestorePoint, toast, confirm]);
 
   const confirmRisk = useCallback(
     async (tweaks) => {
@@ -189,10 +199,13 @@ export function AppProvider({ children }) {
   /** Runs a batch channel with a progress overlay and a summary toast. */
   const runBatch = useCallback(
     async (title, channel, ...args) => {
-      setProgress({ title, index: 0, total: 1 });
+      const steps = typeof title === 'object' ? title : null;
+      setProgress({ title: steps ? steps.title : title, steps: steps?.labels, step: steps ? steps.labels.length - 2 : 0, index: 0, total: 1 });
       const res = await call(channel, ...args);
-      setProgress(null);
+      // Re-reading every tweak takes a few seconds too: keep the overlay until it is done.
+      setProgress((p) => p && { ...p, step: p.steps ? p.steps.length - 1 : 0, done: true, indeterminate: true, name: 'Conferindo o resultado…' });
       await Promise.all([refreshStatus(), refreshState()]);
+      setProgress(null);
       if (res?.ok === false && !res.results) {
         toast(res.error || 'Falha.', { tone: 'error' });
         return res;
@@ -215,10 +228,11 @@ export function AppProvider({ children }) {
       const allowed = info?.isAdmin ? tweaks : tweaks.filter((t) => !t.admin);
       if (blockIfNotAdmin(tweaks) || !allowed.length) return null;
       if (!(await confirmRisk(allowed))) return null;
-      if (!(await ensureRestorePoint())) return null;
-      return runBatch(title, 'tweaks:applyMany', allowed.map((t) => t.id), source);
+      const labels = [...(needsRestorePoint() ? ['Ponto de restauração'] : []), 'Aplicando ajustes', 'Conferindo'];
+      if (!(await ensureRestorePoint({ title, labels }))) return null;
+      return runBatch({ title, labels }, 'tweaks:applyMany', allowed.map((t) => t.id), source);
     },
-    [info, blockIfNotAdmin, confirmRisk, ensureRestorePoint, runBatch],
+    [info, blockIfNotAdmin, confirmRisk, needsRestorePoint, ensureRestorePoint, runBatch],
   );
 
   const revertMany = useCallback(
@@ -267,15 +281,27 @@ export function AppProvider({ children }) {
               <span className="spinner" />
               <h3 style={{ margin: 0 }}>{progress.title}</h3>
             </div>
-            <div className="meter">
-              <div style={{ width: `${progress.total ? Math.round((progress.index / progress.total) * 100) : 0}%` }} />
+            {progress.steps && (
+              <ol className="progress-steps">
+                {progress.steps.map((label, i) => (
+                  <li key={label} className={i < progress.step ? 'done' : i === progress.step ? 'current' : ''} aria-current={i === progress.step ? 'step' : undefined}>
+                    {label}
+                  </li>
+                ))}
+              </ol>
+            )}
+            <div className={`meter${progress.indeterminate ? ' indeterminate' : ''}`}>
+              <div style={progress.indeterminate ? undefined : { width: `${progress.total ? Math.round((progress.index / progress.total) * 100) : 0}%` }} />
             </div>
             <div className="row small muted">
-              <span className="grow ellipsis">{progress.done ? 'Finalizando…' : progress.name || 'Preparando…'}</span>
-              <span className="mono">
-                {Math.min(progress.index + (progress.done ? 0 : 1), progress.total)}/{progress.total}
-              </span>
+              <span className="grow ellipsis">{progress.name || 'Preparando…'}</span>
+              {!progress.indeterminate && (
+                <span className="mono">
+                  {Math.min(progress.index + (progress.done ? 0 : 1), progress.total)}/{progress.total}
+                </span>
+              )}
             </div>
+            {progress.detail && <p className="small muted" style={{ margin: '10px 0 0' }}>{progress.detail}</p>}
           </div>
         </div>
       )}

@@ -17,7 +17,7 @@ JavaScript puro (CommonJS no processo principal, ESM no renderer). Node 24 e npm
 
 ```
 electron/
-  main.cjs          janela, ~80 canais IPC, modo headless --task=clean|repair, Sentinela
+  main.cjs          janela, ícone na bandeja (fechar só esconde, se closeToTray), ~80 canais IPC, modo headless --task=clean|repair, Sentinela
   preload.cjs       ponte window.ctrl.invoke/on com allowlist de canais e eventos
   engine.cjs        aplica/reverte com snapshot, conflitos, lotes, verificação de drift
   ps.cjs            runPowerShell/runJson/streamPowerShell (EncodedCommand ou .ps1 temporário)
@@ -28,7 +28,7 @@ electron/
   hardware.cjs      especificações (CIM) e monitor ao vivo (PDH com nomes em inglês)
   backups.cjs games.cjs debloat.cjs
   catalog/          dados: helpers.cjs + performance/gaming/network/system/security.cjs + index.cjs
-  tools/            network, cleaner, system (WU, startup, timer, MSI, DPC), health, scheduler
+  tools/            network, bufferbloat (latência TCP sob carga, Cloudflare), cleaner, system (WU, startup, timer, MSI, DPC), health, scheduler
 src/
   main.jsx          rotas; context.jsx estado global, toasts, confirmações, lotes
   nav.js            barra lateral e áreas/sub-abas; modulePath()
@@ -61,6 +61,8 @@ Sem banco. `state.json` guarda `applied` (id → snapshot, data, origem), histó
 | `powercfg /qh` nas leituras | `/q` não lista configurações ocultas (CPMINCORES, PERFBOOSTMODE…) | — |
 | Leituras de `bcdedit` falham sem admin | "Sem leitura" é mais honesto que "inativo" | — |
 | IFEO só com nomes de executável específicos | A regra vale para qualquer exe com o mesmo nome (ex.: `Agent.exe` foi rejeitado) | — |
+| Bufferbloat mede o handshake TCP com 1.1.1.1:443, não ICMP | Funciona sem administrador e sem depender de ping liberado; a carga vem dos endpoints públicos de teste da Cloudflare com limite de tempo e de dados (250 MB down, 120 MB up) | Houver um servidor de teste próprio |
+| Fora de propósito (comparado a Paragon, winutil, optimizerDuck e O&O ShutUp10): bloquear o Windows Update, desligar mitigações de processo (`Set-ProcessMitigation`), baixar drivers/DDU/runtimes, mexer na BIOS, travar P-states/power gating da GPU, pôr ~200 serviços em manual de uma vez, desligar MAPS/envio de amostras do Defender, remover Edge/OneDrive à força, desativar IPv6 e políticas que só valem no Enterprise/Education (ex.: esconder "Recomendados" via `IsEducationEnvironment`) | Deixam o PC menos seguro, baixam executáveis de terceiros ou não têm desfazer confiável | Houver como fazer com backup e revert verificáveis |
 | Atualização só avisa e abre a página da release | Sem assinatura de código, auto-update silencioso seria frágil e pouco transparente; instalar por cima preserva o estado | Houver assinatura e canal de update |
 | Nomes de objetos do Windows com legado (`catalog/constants.cjs`) | O plano de energia e a regra de firewall criados como "mojoTWEEKS" continuam reconhecidos por `check` e `revert` | Ninguém mais tiver a versão 0.1 |
 | Mock do navegador usa o catálogo real exportado | Desenvolver a UI sem tocar no sistema | Catálogo mudar: rode `scripts/export-catalog.cjs` |

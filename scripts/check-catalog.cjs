@@ -35,6 +35,18 @@ for (const t of catalog.TWEAKS) {
 for (const t of catalog.TWEAKS) {
   for (const c of t.conflicts || []) if (!ids.has(c)) errors.push(`${t.id}: conflito com id inexistente ${c}`);
 }
+// Two tweaks writing the same value would undo each other's backup on revert, unless they
+// are declared as conflicting (then only one can be applied at a time).
+const writers = new Map();
+for (const t of catalog.TWEAKS) {
+  for (const e of t.registry || []) {
+    const key = `${e.path}|${e.name}`.toLowerCase();
+    const other = writers.get(key);
+    const declared = other && ((t.conflicts || []).includes(other.id) || (other.conflicts || []).includes(t.id));
+    if (other && other.id !== t.id && !declared) errors.push(`${t.id}: escreve ${e.path}\\${e.name}, que ${other.id} também escreve (declare conflicts)`);
+    else if (!other) writers.set(key, t);
+  }
+}
 for (const p of catalog.PROFILES) {
   for (const id of p.tweaks) if (!ids.has(id)) errors.push(`perfil ${p.id}: tweak inexistente ${id}`);
 }

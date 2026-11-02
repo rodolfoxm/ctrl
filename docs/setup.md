@@ -61,7 +61,7 @@
 
 | Item | Antes (21/10, pré-setup) | Depois |
 |---|---|---|
-| `npm run check` | OK (215 tweaks, 1080 scripts) | OK |
+| `npm run check` | OK (241 tweaks, 1211 scripts, sem escritas sobrepostas) | OK |
 | `vite build` | OK | OK (`npm run build`) |
 | Lint | inexistente | `npm run lint`: 0 erros, 11 avisos |
 | Regras locais | inexistente | `npm run verify-rules`: ok |

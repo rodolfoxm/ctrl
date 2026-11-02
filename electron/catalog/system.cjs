@@ -2,6 +2,11 @@
 const { HKCU, HKLM, P, reg, serviceTweak, scheduledTasks } = require('./helpers.cjs');
 
 const DATA_COLLECTION = `${P.polWin}\\DataCollection`;
+const SEARCH_POL = `${P.polWin}\\Windows Search`;
+const EDGE_POL = `${HKLM}SOFTWARE\\Policies\\Microsoft\\Edge`;
+const BRAVE_POL = `${HKLM}SOFTWARE\\Policies\\BraveSoftware\\Brave`;
+const OFFICE_POL = `${HKCU}Software\\Policies\\Microsoft\\Office`;
+const WINDOWS_AI = 'SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsAI';
 const { FW_RULE, FW_RULES_ALL } = require('./constants.cjs');
 
 module.exports = [
@@ -202,6 +207,181 @@ module.exports = [
       reg(`${HKCU}Software\\Microsoft\\Windows\\CurrentVersion\\CDP`, 'CdpSessionUserAuthzPolicy', 0, 'DWord', 1),
     ],
   },
+  {
+    id: 'priv-promoted-apps-off', module: 'privacy',
+    name: 'Bloquear instalação de apps promovidos',
+    description: 'O Windows deixa de instalar sozinho apps sugeridos, de parceiros e do fabricante (jogos casuais, redes sociais, streaming) e de mostrar ofertas do Microsoft 365 na página inicial de Configurações.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    registry: [
+      reg(P.cdm, 'PreInstalledAppsEnabled', 0),
+      reg(P.cdm, 'PreInstalledAppsEverEnabled', 0),
+      reg(P.cdm, 'OemPreInstalledAppsEnabled', 0),
+      reg(`${P.polWin}\\CloudContent`, 'DisableWindowsConsumerFeatures', 1),
+      reg(`${P.polWin}\\CloudContent`, 'DisableConsumerAccountStateContent', 1),
+      reg(`${HKCU}Software\\Policies\\Microsoft\\Windows\\CloudContent`, 'DisableThirdPartySuggestions', 1),
+    ],
+  },
+  {
+    id: 'priv-search-cloud-off', module: 'privacy',
+    name: 'Pesquisa do Windows só local',
+    description: 'A busca do Menu Iniciar deixa de consultar a nuvem e a web, não usa sua localização, e a Cortana fica desativada por política.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'explorer',
+    registry: [
+      reg(SEARCH_POL, 'AllowCloudSearch', 0),
+      reg(SEARCH_POL, 'ConnectedSearchUseWeb', 0),
+      reg(SEARCH_POL, 'DisableWebSearch', 1),
+      reg(SEARCH_POL, 'AllowSearchToUseLocation', 0),
+      reg(SEARCH_POL, 'AllowCortana', 0),
+      reg(SEARCH_POL, 'AllowCortanaAboveLock', 0),
+    ],
+  },
+  {
+    id: 'priv-clipboard-history-off', module: 'privacy',
+    name: 'Desativar histórico da área de transferência',
+    description: 'O Win+V deixa de guardar o que você copiou. Útil para quem copia senhas e dados sensíveis.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    registry: [reg(`${P.polWin}\\System`, 'AllowClipboardHistory', 0)],
+  },
+  {
+    id: 'priv-handwriting-off', module: 'privacy',
+    name: 'Não compartilhar dados de escrita à mão',
+    description: 'Amostras e relatórios de erro do reconhecimento de escrita (caneta e tela de toque) deixam de ser enviados à Microsoft.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    registry: [
+      reg(`${P.polWin}\\TabletPC`, 'PreventHandwritingDataSharing', 1),
+      reg(`${P.polWin}\\HandwritingErrorReports`, 'PreventHandwritingErrorReports', 1),
+    ],
+  },
+  {
+    id: 'priv-app-inventory-off', module: 'privacy',
+    name: 'Desativar inventário de apps e gravador de passos',
+    description: 'O Inventory Collector e a Telemetria de Aplicativos param de enviar a lista de programas instalados e como você os usa, e o Gravador de Passos (psr.exe) é desativado.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    registry: [
+      reg(`${P.polWin}\\AppCompat`, 'DisableInventory', 1),
+      reg(`${P.polWin}\\AppCompat`, 'AITEnable', 0),
+      reg(`${P.polWin}\\AppCompat`, 'DisableUAR', 1),
+    ],
+  },
+  {
+    id: 'priv-diag-extra-off', module: 'privacy',
+    name: 'Desligar coletas extras de diagnóstico',
+    description: 'O nome do PC sai da telemetria, a coleta de logs de diagnóstico fica limitada, e param os downloads de configurações remotas (OneSettings) e de modelos de fala, a ajuda ativa e os pedidos de feedback. A Ferramenta de Remoção de Software Mal-Intencionado deixa de relatar o que encontra.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    registry: [
+      reg(DATA_COLLECTION, 'AllowDeviceNameInTelemetry', 0),
+      reg(DATA_COLLECTION, 'AllowCommercialDataPipeline', 0),
+      reg(DATA_COLLECTION, 'LimitDiagnosticLogCollection', 1),
+      reg(DATA_COLLECTION, 'DisableOneSettingsDownloads', 1),
+      reg(DATA_COLLECTION, 'MicrosoftEdgeDataOptIn', 0),
+      reg(`${HKLM}SOFTWARE\\Policies\\Microsoft\\Speech`, 'AllowSpeechModelUpdate', 0),
+      reg(`${HKLM}SOFTWARE\\Policies\\Microsoft\\Assistance\\Client\\1.0`, 'NoActiveHelp', 1),
+      reg(`${HKCU}Software\\Policies\\Microsoft\\Assistance\\Client\\1.0`, 'NoExplicitFeedback', 1),
+      reg(`${HKLM}SOFTWARE\\Policies\\Microsoft\\MRT`, 'DontReportInfectionInformation', 1),
+    ],
+  },
+  {
+    id: 'priv-diag-tasks-off', module: 'privacy',
+    name: 'Desativar mais tarefas de diagnóstico',
+    description: 'Completa a desativação das tarefas de telemetria: MareBackup e PcaPatchDbTask (compatibilidade), Proxy do Autochk, download de cenários de feedback, fila de relatórios de erro e coletor de diagnóstico de disco.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    script: scheduledTasks([
+      '\\Microsoft\\Windows\\Application Experience\\MareBackup',
+      '\\Microsoft\\Windows\\Application Experience\\PcaPatchDbTask',
+      '\\Microsoft\\Windows\\Autochk\\Proxy',
+      '\\Microsoft\\Windows\\Feedback\\Siuf\\DmClientOnScenarioDownload',
+      '\\Microsoft\\Windows\\Windows Error Reporting\\QueueReporting',
+      '\\Microsoft\\Windows\\DiskDiagnostic\\Microsoft-Windows-DiskDiagnosticDataCollector',
+    ]),
+  },
+  {
+    id: 'priv-language-list-off', module: 'privacy',
+    name: 'Não informar seus idiomas aos sites',
+    description: 'Sites deixam de receber a lista de idiomas instalados no Windows, um dado a menos para identificar o seu PC.',
+    impact: 'low', risk: 'safe', admin: false, restart: 'none',
+    registry: [reg(`${HKCU}Control Panel\\International\\User Profile`, 'HttpAcceptLanguageOptOut', 1)],
+  },
+  {
+    id: 'priv-location-policy-off', module: 'privacy',
+    name: 'Bloquear localização em todo o sistema',
+    description: 'Desliga por política a localização e os scripts de localização para todos os usuários e a atualização automática dos mapas offline.',
+    impact: 'low', risk: 'moderate', admin: true, restart: 'none',
+    warn: 'O fuso horário automático, o "Encontrar meu dispositivo" e apps de clima e mapas deixam de saber onde o PC está.',
+    registry: [
+      reg(`${P.polWin}\\LocationAndSensors`, 'DisableLocation', 1),
+      reg(`${P.polWin}\\LocationAndSensors`, 'DisableLocationScripting', 1),
+      reg(`${HKLM}SYSTEM\\Maps`, 'AutoUpdateEnabled', 0, 'DWord', 1),
+    ],
+  },
+  {
+    id: 'priv-find-my-device-off', module: 'privacy',
+    name: 'Desativar "Encontrar meu dispositivo"',
+    description: 'O PC deixa de enviar a localização periodicamente para a conta Microsoft.',
+    impact: 'low', risk: 'moderate', admin: true, restart: 'none',
+    warn: 'Se o notebook for perdido ou roubado, não dá mais para localizá-lo pela conta Microsoft.',
+    registry: [reg(`${HKLM}SOFTWARE\\Policies\\Microsoft\\FindMyDevice`, 'AllowFindMyDevice', 0)],
+  },
+  {
+    id: 'priv-edge-tracking-off', module: 'privacy',
+    name: 'Edge sem rastreamento, anúncios e promoções',
+    description: 'Políticas do Edge: sem dados de diagnóstico nem personalização de anúncios, Do Not Track ligado, sem assistente de compras, Microsoft Rewards, barra lateral, widget, recomendações, campanhas de navegador padrão e páginas de erro online, e sem atalho novo na área de trabalho a cada atualização.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    warn: 'O Edge passa a mostrar "Gerenciado pela sua organização". É só o aviso de que há políticas aplicadas.',
+    registry: [
+      reg(EDGE_POL, 'DiagnosticData', 0),
+      reg(EDGE_POL, 'PersonalizationReportingEnabled', 0),
+      reg(EDGE_POL, 'UserFeedbackAllowed', 0),
+      reg(EDGE_POL, 'ConfigureDoNotTrack', 1),
+      reg(EDGE_POL, 'AlternateErrorPagesEnabled', 0),
+      reg(EDGE_POL, 'EdgeShoppingAssistantEnabled', 0),
+      reg(EDGE_POL, 'ShowMicrosoftRewards', 0),
+      reg(EDGE_POL, 'ShowRecommendationsEnabled', 0),
+      reg(EDGE_POL, 'HideFirstRunExperience', 1),
+      reg(EDGE_POL, 'MicrosoftEdgeInsiderPromotionEnabled', 0),
+      reg(EDGE_POL, 'HubsSidebarEnabled', 0),
+      reg(EDGE_POL, 'WebWidgetAllowed', 0),
+      reg(EDGE_POL, 'DefaultBrowserSettingsCampaignEnabled', 0),
+      reg(EDGE_POL, 'WalletDonationEnabled', 0),
+      reg(`${HKLM}SOFTWARE\\Policies\\Microsoft\\EdgeUpdate`, 'CreateDesktopShortcutDefault', 0),
+    ],
+  },
+  {
+    id: 'priv-brave-debloat', module: 'privacy',
+    name: 'Brave sem extras e sem telemetria',
+    description: 'Só faz efeito se você usa o Brave. Desliga Rewards, Wallet, VPN, Leo (IA), Brave News, Talk, P3A, o ping de estatísticas e os relatórios de uso.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    warn: 'O Brave passa a mostrar "Gerenciado pela sua organização". É só o aviso de que há políticas aplicadas.',
+    registry: [
+      reg(BRAVE_POL, 'BraveRewardsDisabled', 1),
+      reg(BRAVE_POL, 'BraveWalletDisabled', 1),
+      reg(BRAVE_POL, 'BraveVPNDisabled', 1),
+      reg(BRAVE_POL, 'BraveAIChatEnabled', 0),
+      reg(BRAVE_POL, 'BraveNewsDisabled', 1),
+      reg(BRAVE_POL, 'BraveTalkDisabled', 1),
+      reg(BRAVE_POL, 'BraveP3AEnabled', 0),
+      reg(BRAVE_POL, 'BraveStatsPingEnabled', 0),
+      reg(BRAVE_POL, 'MetricsReportingEnabled', 0),
+      reg(BRAVE_POL, 'UrlKeyedAnonymizedDataCollectionEnabled', 0),
+    ],
+  },
+  {
+    id: 'priv-office-telemetry-off', module: 'privacy',
+    name: 'Office sem telemetria e pesquisas',
+    description: 'Só faz efeito se você usa o Microsoft Office (2016 em diante). Desliga a telemetria do cliente, os logs e envios do agente de telemetria, as pesquisas de satisfação, o Programa de Aperfeiçoamento, os dados de confiabilidade das atualizações e as informações do LinkedIn.',
+    impact: 'low', risk: 'safe', admin: false, restart: 'none',
+    registry: [
+      reg(`${HKCU}Software\\Microsoft\\Office\\Common\\ClientTelemetry`, 'DisableTelemetry', 1),
+      reg(`${OFFICE_POL}\\Common\\ClientTelemetry`, 'SendTelemetry', 3),
+      reg(`${OFFICE_POL}\\16.0\\Common`, 'QMEnable', 0),
+      reg(`${OFFICE_POL}\\16.0\\Common`, 'UpdateReliabilityData', 0),
+      reg(`${OFFICE_POL}\\16.0\\Common`, 'LinkedIn', 0),
+      reg(`${OFFICE_POL}\\16.0\\Common\\Feedback`, 'SurveyEnabled', 0),
+      reg(`${OFFICE_POL}\\16.0\\Common\\Feedback`, 'IncludeEmail', 0),
+      reg(`${OFFICE_POL}\\16.0\\OSM`, 'Enablelogging', 0),
+      reg(`${OFFICE_POL}\\16.0\\OSM`, 'EnableUpload', 0),
+      reg(`${OFFICE_POL}\\16.0\\OSM`, 'EnableFileObfuscation', 1),
+    ],
+  },
 
   // ---------------- Visual ----------------
   {
@@ -306,6 +486,26 @@ module.exports = [
     description: 'Somente se você não compartilha a internet do PC por Wi-Fi.',
     impact: 'low', risk: 'safe',
   }, 'icssvc'),
+  serviceTweak({
+    id: 'svc-discovery-off', module: 'services',
+    name: 'Desativar descoberta de rede local',
+    description: 'Publicação e Host de Descoberta de Função, SSDP e UPnP: o PC deixa de anunciar e procurar outros aparelhos na rede local. A pasta Rede do Explorer e o "Transmitir para dispositivo" (DLNA) param de achar aparelhos.',
+    impact: 'low', risk: 'moderate',
+    warn: 'Impressoras de rede, outros PCs na pasta Rede e TVs para transmitir deixam de ser encontrados automaticamente.',
+  }, ['FDResPub', 'fdPHost', 'SSDPSRV', 'upnphost']),
+  serviceTweak({
+    id: 'svc-bluetooth-off', module: 'services',
+    name: 'Desativar serviços de Bluetooth',
+    description: 'Para o Serviço de Suporte, o Gateway de Áudio e o AVCTP do Bluetooth. Só para PCs que não usam nada sem fio por Bluetooth.',
+    impact: 'low', risk: 'moderate',
+    warn: 'Fones, controles, mouses e teclados Bluetooth param de funcionar até você desfazer.',
+  }, ['bthserv', 'BTAGService', 'BthAvctpSvc']),
+  serviceTweak({
+    id: 'svc-offline-files-off', module: 'services',
+    name: 'Desativar Arquivos Offline',
+    description: 'Para o CscService, que sincroniza pastas de rede para uso offline. Só faz falta em redes corporativas com pastas redirecionadas.',
+    impact: 'low', risk: 'safe',
+  }, 'CscService'),
   serviceTweak({
     id: 'svc-diag-hub-off', module: 'services',
     name: 'Desativar Hub de Coleta de Diagnóstico',
@@ -429,6 +629,20 @@ module.exports = [
     impact: 'low', risk: 'safe', admin: false, restart: 'explorer', requires: { win10: true },
     registry: [reg(`${HKCU}Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer`, 'HideSCAMeetNow', 1)],
   },
+  {
+    id: 'explorer-sync-ads-off', module: 'explorer',
+    name: 'Sem anúncios do OneDrive e do Microsoft 365 no Explorer',
+    description: 'Tira as faixas de oferta do OneDrive e do Microsoft 365 que aparecem no topo do Explorer.',
+    impact: 'low', risk: 'safe', admin: false, restart: 'explorer',
+    registry: [reg(P.adv, 'ShowSyncProviderNotifications', 0)],
+  },
+  {
+    id: 'explorer-news-interests-off', module: 'explorer',
+    name: 'Desativar Notícias e Interesses',
+    description: 'Remove o widget de clima e notícias da barra de tarefas do Windows 10 e para de carregar o conteúdo dele em segundo plano.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'explorer', requires: { win10: true },
+    registry: [reg(`${P.polWin}\\Windows Feeds`, 'EnableFeeds', 0)],
+  },
 
   // ---------------- Inicialização ----------------
   {
@@ -512,6 +726,25 @@ module.exports = [
     description: 'O MRT mensal deixa de ser baixado e executado pelo Windows Update (o Defender continua protegendo).',
     impact: 'low', risk: 'safe', admin: true, restart: 'none',
     registry: [reg(`${HKLM}SOFTWARE\\Policies\\Microsoft\\MRT`, 'DontOfferThroughWUAU', 1)],
+  },
+  {
+    id: 'wu-device-apps-off', module: 'updates',
+    name: 'Não baixar apps de fabricante dos dispositivos',
+    description: 'Conectar um mouse, teclado ou headset deixa de instalar sozinho o app do fabricante (Razer, Logitech e outros) e os ícones e metadados baixados pelo Windows Update. O driver continua sendo instalado.',
+    impact: 'low', risk: 'moderate', admin: true, restart: 'none',
+    warn: 'Se algum dispositivo novo não funcionar direito, desfaça e conecte de novo para o Windows completar a instalação.',
+    registry: [
+      reg(`${P.polWin}\\Device Metadata`, 'PreventDeviceMetadataFromNetwork', 1),
+      reg(`${HKLM}SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Device Installer`, 'DisableCoInstallers', 1, 'DWord', 0),
+    ],
+  },
+  {
+    id: 'wu-pause-longer', module: 'updates',
+    name: 'Permitir pausar atualizações por até 52 semanas',
+    description: 'Configurações › Windows Update passa a oferecer pausas mais longas que as 5 semanas padrão. Nada é pausado sozinho: você escolhe quando.',
+    impact: 'low', risk: 'moderate', admin: true, restart: 'none',
+    warn: 'Enquanto estiver pausado, as atualizações de segurança também ficam paradas.',
+    registry: [reg(`${HKLM}SOFTWARE\\Microsoft\\WindowsUpdate\\UX\\Settings`, 'FlightSettingsMaxPauseDays', 364)],
   },
 
   // ---------------- Windows 11 ----------------
@@ -627,5 +860,34 @@ Set-Item -LiteralPath 'HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c
     description: 'Tira a entrada Galeria do painel de navegação do Explorer.',
     impact: 'low', risk: 'safe', admin: false, restart: 'explorer', requires: { win11: true },
     registry: [reg(`${HKCU}Software\\Classes\\CLSID\\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}`, 'System.IsPinnedToNameSpaceTree', 0)],
+  },
+  {
+    id: 'w11-explorer-home-off', module: 'w11',
+    name: 'Remover “Início” do painel do Explorer',
+    description: 'Tira a entrada Início (arquivos recentes e recomendados) do painel de navegação do Explorer.',
+    impact: 'low', risk: 'safe', admin: false, restart: 'explorer', requires: { win11: true },
+    warn: 'Se o Explorer abre em Início, ative também "Abrir o Explorer em Este Computador".',
+    registry: [reg(`${HKCU}Software\\Classes\\CLSID\\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}`, 'System.IsPinnedToNameSpaceTree', 0)],
+  },
+  {
+    id: 'w11-ai-features-off', module: 'w11',
+    name: 'Desativar Click to Do e a IA do Bloco de Notas e do Paint',
+    description: 'Desliga por política o Click to Do (ações de IA sobre o que está na tela), os recursos de IA do Bloco de Notas e o Cocreator, o preenchimento generativo e o criador de imagens do Paint.',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none', requires: { win11: true },
+    registry: [
+      reg(`${HKLM}${WINDOWS_AI}`, 'DisableClickToDo', 1),
+      reg(`${HKCU}${WINDOWS_AI}`, 'DisableClickToDo', 1),
+      reg(`${HKLM}SOFTWARE\\Policies\\WindowsNotepad`, 'DisableAIFeatures', 1),
+      reg(`${HKLM}SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint`, 'DisableCocreator', 1),
+      reg(`${HKLM}SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint`, 'DisableGenerativeFill', 1),
+      reg(`${HKLM}SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Paint`, 'DisableImageCreator', 1),
+    ],
+  },
+  {
+    id: 'w11-battery-percent', module: 'w11',
+    name: 'Mostrar a porcentagem da bateria',
+    description: 'Exibe a porcentagem ao lado do ícone da bateria na barra de tarefas (Windows 11 24H2 em diante).',
+    impact: 'low', risk: 'safe', admin: false, restart: 'explorer', requires: { win11: true, laptop: true },
+    registry: [reg(P.adv, 'IsBatteryPercentageEnabled', 1)],
   },
 ];

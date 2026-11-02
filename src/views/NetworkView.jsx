@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { Activity, Globe, Undo2, Play } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Activity, Globe, Undo2, Play, Gauge } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { call } from '../lib/api.js';
+import { call, on } from '../lib/api.js';
 import { useApp } from '../context.jsx';
 import { ago } from '../lib/format.js';
-import { Card, Stat, Badge, Sparkline, Loading, useAsync, ActionButton } from '../components/ui.jsx';
+import { Card, Stat, Badge, Sparkline, Loading, useAsync, ActionButton, Meter } from '../components/ui.jsx';
 import ModuleView from '../components/ModuleView.jsx';
 
 function quality(r) {
@@ -48,6 +48,70 @@ export function DnsStatus() {
   );
 }
 
+const PHASE = { idle: 'Medindo a latência em repouso', download: 'Medindo durante o download', upload: 'Medindo durante o upload' };
+const GRADE_TONE = { 'A+': 'success', A: 'success', B: 'warning', C: 'warning', D: 'danger', F: 'danger' };
+
+function bloatAdvice(g) {
+  if (g === 'A+' || g === 'A') return 'A conexão segura bem a carga: dá para jogar enquanto alguém baixa arquivos ou assiste a vídeos na mesma rede.';
+  const strong = g === 'D' || g === 'F' ? ' Downloads, streams e backups em outros aparelhos vão causar lag nos jogos.' : '';
+  return `A latência sobe quando a internet está cheia.${strong} O que resolve é ligar o SQM/QoS no roteador (aparece como "Smart Queue", "QoS adaptativo" ou "fq_codel/CAKE") limitando a banda a uns 90% do contratado. Ajustes no Windows não corrigem bufferbloat: ele acontece no roteador ou no provedor.`;
+}
+
+export function BufferbloatCard() {
+  const { toast } = useApp();
+  const [res, setRes] = useState(null);
+  const [prog, setProg] = useState(null);
+  useEffect(() => on('net:bloat', setProg), []);
+  const run = async () => {
+    setProg({ phase: 'idle', elapsed: 0, total: 1 });
+    const r = await call('net:bufferbloat');
+    setProg(null);
+    if (r?.ok) setRes(r);
+    else toast(r?.error || 'Falha no teste.', { tone: 'error' });
+  };
+  const phaseStat = (label, p) => (
+    <Stat label={label} value={p.added != null ? `+${Math.round(p.added)}` : '—'} unit="ms" sub={`${p.mbps} Mbps · mediana ${p.median ?? '—'} ms`} />
+  );
+  return (
+    <Card
+      title="Bufferbloat"
+      sub="Quanto a latência sobe quando a internet está cheia."
+      icon={Gauge}
+      end={<ActionButton className="btn btn-sm btn-primary" icon={Play} onClick={run} disabled={!!prog}>{res ? 'Testar de novo' : 'Testar'}</ActionButton>}
+    >
+      {prog ? (
+        <div>
+          <div className="row small" style={{ marginBottom: 8 }}>
+            <span className="grow">{PHASE[prog.phase]}…</span>
+            {prog.phase !== 'idle' && <span className="mono muted">{Math.round((prog.bytes || 0) / 1e6)} MB</span>}
+          </div>
+          <Meter value={((['idle', 'download', 'upload'].indexOf(prog.phase) + Math.min(1, prog.elapsed / prog.total)) / 3) * 100} />
+        </div>
+      ) : res ? (
+        <div className="row" style={{ alignItems: 'flex-start', gap: 20 }}>
+          <div className="bloat-grade">
+            <Badge tone={GRADE_TONE[res.grade]}>Nota</Badge>
+            <strong>{res.grade}</strong>
+          </div>
+          <div className="grow stack" style={{ gap: 12 }}>
+            <div className="grid grid-3">
+              <Stat label="Em repouso" value={res.idle.median} unit="ms" sub="latência base" />
+              {phaseStat('No download', res.download)}
+              {phaseStat('No upload', res.upload)}
+            </div>
+            <div className="small muted">{bloatAdvice(res.grade)}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="dim small">
+          Mede a latência em repouso e depois com o download e o upload no máximo, como acontece quando alguém baixa um jogo ou sobe um vídeo
+          enquanto você joga. Usa os servidores de teste da Cloudflare, leva uns 20 segundos e pode consumir até 370 MB.
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export default function NetworkView() {
   const [lat, setLat] = useState(null);
   const run = async () => setLat(await call('net:latency', ['1.1.1.1', '8.8.8.8']));
@@ -80,6 +144,7 @@ export default function NetworkView() {
         </Card>
         <DnsStatus />
       </div>
+      <BufferbloatCard />
       <ModuleView moduleId="network" />
     </div>
   );

@@ -269,6 +269,13 @@ Get-ScheduledTask -TaskName 'NvTmRep*' -ErrorAction SilentlyContinue | Disable-S
     impact: 'low', risk: 'safe', admin: true, restart: 'reboot', requires: { minRamGb: 16 },
     registry: [reg(`${HKLM}SYSTEM\\CurrentControlSet\\Control\\FileSystem`, 'NtfsMemoryUsage', 2)],
   },
+  {
+    id: 'storage-long-paths', module: 'storage',
+    name: 'Permitir caminhos com mais de 260 caracteres',
+    description: 'Evita erros ao extrair mods, projetos de programação e pastas muito aninhadas. Vale para os apps preparados para isso (a maioria dos modernos).',
+    impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    registry: [reg(`${HKLM}SYSTEM\\CurrentControlSet\\Control\\FileSystem`, 'LongPathsEnabled', 1, 'DWord', 0)],
+  },
 
   // ---------------- Tela ----------------
   {
