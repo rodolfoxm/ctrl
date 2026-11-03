@@ -66,4 +66,4 @@ Verifique instalação e descoberta antes de depender de uma ferramenta; ausênc
 
 ## Git
 
-Repositório local, sem remoto. Sem hooks de commit/push, sem exigência de branch. Commits só quando pedidos ou ao fechar uma etapa autorizada.
+Remoto: https://github.com/rodolfoxm/ctrl, branch `main` (pública; push e releases só com pedido explícito). A branch local `legacy-mojotweeks` guarda o histórico antigo e nunca vai para o remoto. Sem hooks de commit/push. Commits só quando pedidos ou ao fechar uma etapa autorizada.
