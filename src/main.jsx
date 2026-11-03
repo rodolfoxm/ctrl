@@ -15,6 +15,7 @@ import Modules from './pages/Modules.jsx';
 import Profiles from './pages/Profiles.jsx';
 import History from './pages/History.jsx';
 import About from './pages/About.jsx';
+import Batuta from './pages/Batuta.jsx';
 import Scheduler from './pages/Scheduler.jsx';
 import Settings from './pages/Settings.jsx';
 
@@ -51,6 +52,9 @@ function Root() {
           <Route path="/live-game" element={<Navigate to="/gaming/live" replace />} />
           <Route path="/history" element={<History />} />
           <Route path="/about" element={<About />} />
+          <Route path="/core" element={<Batuta />} />
+          <Route path="/pro" element={<Navigate to="/core" replace />} />
+          <Route path="/batuta" element={<Navigate to="/core" replace />} />
           <Route path="/:area" element={<AreaPage />} />
           <Route path="/:area/:sub" element={<AreaPage />} />
           <Route path="/modules" element={<Modules />} />

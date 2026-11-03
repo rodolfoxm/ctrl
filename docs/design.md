@@ -34,6 +34,12 @@ barra indeterminada.
   instalador e `docs/social.png` a partir de `scripts/brand/*.html`.
 - **Ícones:** lucide-react.
 
+## Core
+
+Página própria na barra lateral (rota `/core`; no código, `Batuta.jsx` e canais `batuta:*`), com abas Regras (com o cartão de jogos detectados), Contenção, Vigia, Memória, Núcleos e Atividade, mais o assistente "Configurar para meus
+jogos" (modal em dois passos: escolher os jogos, ver e aplicar). Avisa quando Process Lasso, ParkControl ou ISLC estão abertos, porque
+brigariam com ele. Em Sobre, o cartão "Apoiar o desenvolvimento" abre o site; nada de pop-up.
+
 ## Interação
 
 - Navegação por teclado: sub-abas com setas; busca global com `Ctrl+K`, setas e Enter; foco visível (`:focus-visible` no acento).

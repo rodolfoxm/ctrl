@@ -3,7 +3,7 @@ import {
   CalendarClock, Settings, Cpu, MonitorCog, MemoryStick, HardDrive, Monitor, Zap, Activity, Waves,
   Timer, Mouse, Usb, Volume2, ListOrdered, Store, Network, Gauge as GaugeIcon, Shield, Wrench, Eraser, RefreshCw,
   EyeOff, Sparkles, Server, Folder, Rocket, LayoutGrid, PackageX, Info, ScanSearch, HeartPulse, BatteryMedium, Clock,
-  BellOff, ShieldHalf, Power, Puzzle,
+  BellOff, ShieldHalf, Power, Puzzle, Wand2,
 } from 'lucide-react';
 
 /** Sidebar, as in the brand guide. `match` lists the route prefixes that light up an item. */
@@ -15,6 +15,7 @@ export const NAV = [
       { id: 'tweaks', label: 'Ajustes', path: '/performance', icon: SlidersHorizontal, match: ['/performance', '/network', '/system', '/hardware', '/modules'] },
       { id: 'profiles', label: 'Perfis', path: '/profiles', icon: Layers },
       { id: 'games', label: 'Jogos', path: '/gaming', icon: Gamepad2, match: ['/gaming'] },
+      { id: 'core', label: 'Core', path: '/core', icon: Wand2 },
       { id: 'verify', label: 'Verificação', path: '/guardian', icon: ShieldCheck },
       { id: 'history', label: 'Histórico', path: '/history', icon: History },
       { id: 'settings', label: 'Configurações', path: '/settings', icon: Settings },

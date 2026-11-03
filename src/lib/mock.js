@@ -9,6 +9,40 @@ const listeners = new Map();
 const emit = (ch, data) => (listeners.get(ch) || new Set()).forEach((cb) => cb(data));
 
 const status = Object.fromEntries(snapshot.tweaks.map((t, i) => [t.id, t.verifiable ? i % 5 === 0 : null]));
+const BATUTA_GAMES = [
+  { id: 'cs2', name: 'Counter-Strike 2', exe: 'cs2', cores: 'p', ram: 'light' },
+  { id: 'valorant', name: 'VALORANT', exe: 'VALORANT-Win64-Shipping', cores: 'p', ram: 'light' },
+  { id: 'lol', name: 'League of Legends', exe: 'League of Legends', cores: 'p', ram: 'light' },
+  { id: 'warzone', name: 'Call of Duty / Warzone', exe: 'cod', cores: 'all', ram: 'heavy' },
+  { id: 'fortnite', name: 'Fortnite', exe: 'FortniteClient-Win64-Shipping', cores: 'all', ram: 'medium' },
+  { id: 'apex', name: 'Apex Legends', exe: 'r5apex_dx12', cores: 'all', ram: 'medium' },
+  { id: 'tarkov', name: 'Escape from Tarkov', exe: 'EscapeFromTarkov', cores: 'all', ram: 'heavy' },
+];
+const batutaMock = {
+  config: {
+    enabled: false,
+    rules: [],
+    containment: { enabled: true, total: 70, proc: 10, overMs: 2700, restore: 2, minMs: 2100, exclusions: [] },
+    memory: { enabled: false, listMB: 1024, freeMB: 4096, onlyGaming: true, exclusions: [] },
+    boost: { enabled: false, activePlan: null, idlePlan: '381b4222-f694-41f0-9685-ff5bb260df2e', idleMin: 5 },
+    profile: { games: [] },
+    autoDetect: { enabled: true, priority: 'high', gpu: 'high', efficiency: 'never' },
+    watchdog: [{ exe: 'EpicGamesLauncher.exe', metric: 'cpu', threshold: 15, seconds: 10, action: 'ecores' }],
+  },
+  games: BATUTA_GAMES, ramGb: 32, hybrid: true, laptop: false, running: true, purges: 0, freedMB: 0, rivals: [],
+  status: null,
+  events: [{ type: 'contain', name: 'SearchIndexer', cpu: 12.4, at: new Date(Date.now() - 600000).toISOString() }, { type: 'release', name: 'SearchIndexer', at: new Date(Date.now() - 590000).toISOString() }],
+};
+let batutaTimer = null;
+function startBatutaMock() {
+  if (batutaTimer) return;
+  batutaTimer = setInterval(() => {
+    const rules = batutaMock.config.enabled ? batutaMock.config.rules : [];
+    batutaMock.status = { type: 'status', cpu: 18 + Math.random() * 10, standby: 5800 + Math.round(Math.random() * 400), free: 9400, idleMs: 2000, gaming: rules.some((r) => r.game) || (batutaMock.config.enabled && batutaMock.config.autoDetect.enabled), managed: [...rules.map((r, i) => ({ pid: 1000 + i, name: r.exe.replace(/\.exe$/i, ''), game: !!r.game })), ...(batutaMock.config.enabled && batutaMock.config.autoDetect.enabled ? [{ pid: 2001, name: 'HollowKnight', auto: true, game: true }] : [])], held: [] };
+    emit('batuta:event', batutaMock.status);
+  }, 2000);
+}
+
 const state = {
   applied: {},
   history: [],
@@ -127,6 +161,7 @@ const handlers = {
   'app:checkUpdate': async () => ({ enabled: true, current: '1.0.0', version: '1.1.0', available: location.search.includes('update'), url: 'https://github.com/rodolfoxm/ctrl/releases/latest', checkedAt: new Date().toISOString() }),
   'app:openRelease': async () => (window.open('https://github.com/rodolfoxm/ctrl/releases/latest', '_blank'), { ok: true }),
   'app:openRepo': async () => (window.open('https://github.com/rodolfoxm/ctrl', '_blank'), { ok: true }),
+  'app:openSupport': async () => (window.open('https://www.mojinho.com.br/apoiar', '_blank'), { ok: true }),
   'shell:open': async (url) => (window.open(url, '_blank'), { ok: true }),
   'machine:get': async () => (await wait(200), machine),
   'catalog:get': async () => snapshot,
@@ -209,6 +244,32 @@ const handlers = {
   'games:status': async () => (await wait(300), { priority: true, gpu: false, fso: false }),
   'games:set': async () => (await wait(300), { ok: true }),
   'games:launch': async () => ({ ok: true }),
+  'batuta:state': async () => (startBatutaMock(), { ...batutaMock, config: structuredClone(batutaMock.config) }),
+  'batuta:save': async (patch) => {
+    Object.assign(batutaMock.config, patch);
+    return { ...batutaMock, config: structuredClone(batutaMock.config) };
+  },
+  'batuta:processes': async () => [{ exe: 'cs2.exe', title: 'Counter-Strike 2' }, { exe: 'Discord.exe', title: 'Discord' }, { exe: 'obs64.exe', title: 'OBS' }],
+  'batuta:purge': async () => (await wait(500), { ok: true, before: 6120, after: 210 }),
+  'batuta:suggest': async (games, { background = true } = {}) => {
+    const chosen = BATUTA_GAMES.filter((g) => games.includes(g.id));
+    const heavy = chosen.some((g) => g.ram === 'heavy');
+    const rules = chosen.map((g) => ({ exe: `${g.exe}.exe`, name: g.name, game: true, priority: 'high', cores: g.cores, io: 'normal', gpu: 'high', efficiency: 'never' }));
+    if (background) rules.push({ exe: 'Discord.exe', name: 'Discord', game: false, priority: 'normal', cores: 'e', io: 'normal', gpu: 'low', efficiency: 'default' });
+    const memory = { enabled: heavy, onlyGaming: true, listMB: heavy ? 1024 : 2048, freeMB: heavy ? 16384 : 8192, exclusions: [] };
+    const why = chosen.map((g) => `${g.name}: prioridade alta, GPU em prioridade alta e nunca em modo de eficiência, ${g.cores === 'p' ? 'só nos P-cores' : 'em todos os núcleos'}.`);
+    if (background) why.push('Discord, Spotify, RGB e afins vão para os E-cores.');
+    why.push(heavy ? `Memória: limpa a lista de espera durante os jogos quando ela passa de 1024 MB e a memória livre cai abaixo de ${memory.freeMB} MB.` : 'Memória: limpeza desligada; esses jogos usam pouca RAM.');
+    return { rules, memory, boost: { enabled: false, activePlan: null, idlePlan: '381b4222-f694-41f0-9685-ff5bb260df2e', idleMin: 5 }, profile: { games }, why };
+  },
+  'batuta:plans': async () => [
+    { guid: '381b4222-f694-41f0-9685-ff5bb260df2e', name: 'Equilibrado', active: false },
+    { guid: '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c', name: 'Alto desempenho', active: false },
+    { guid: 'e3fd516a-89ca-4e1d-a610-4584878543d2', name: 'ctrl Desempenho', active: true },
+  ],
+  'batuta:parking': async () => ({ ac: 100, dc: 100, lockedBy: state.applied['cpu-core-parking-off'] ? 'cpu-core-parking-off' : null, backup: null }),
+  'batuta:setParking': async (v) => ({ ok: true, ac: v.ac, dc: v.dc ?? 100, lockedBy: null, backup: { ac: 10, dc: 10 } }),
+  'batuta:restoreParking': async () => ({ ok: true, ac: 10, dc: 10, lockedBy: null, backup: null }),
   'livegame:status': async () => ({
     enabled: state.settings.liveGameMode, session: null,
     sessions: [{ game: 'Counter-Strike 2', exe: 'cs2.exe', start: new Date(Date.now() - 7.2e6).toISOString(), end: new Date(Date.now() - 3.6e6).toISOString(), actions: ['Prioridade Alta para o processo do jogo', 'Plano de energia de alto desempenho', 'Resolução de timer em 0,5 ms'] }],

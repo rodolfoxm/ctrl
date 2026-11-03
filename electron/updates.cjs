@@ -52,9 +52,17 @@ function openRelease() {
   return { ok: true };
 }
 
+// Voluntary support page on the author's site. Fixed address: nothing from the renderer is opened here.
+const SUPPORT_URL = 'https://www.mojinho.com.br/apoiar';
+
+function openSupport() {
+  shell.openExternal(SUPPORT_URL);
+  return { ok: true };
+}
+
 function openRepo() {
   shell.openExternal(`https://github.com/${REPO}`);
   return { ok: true };
 }
 
-module.exports = { check, openRelease, openRepo, newer, REPO };
+module.exports = { check, openRelease, openRepo, openSupport, newer, REPO, SUPPORT_URL };

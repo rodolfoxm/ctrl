@@ -69,4 +69,8 @@ fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
 shot('social.html', 1280, 640, path.join(root, 'docs', 'social.png'));
 
 fs.rmSync(tmp, { recursive: true, force: true });
-console.log('Marca gerada: build/icon.png, build/icon.ico, build/installerSidebar.bmp, build/installerHeader.bmp, docs/social.png');
+// Same icon for the page favicon (browser preview and dev window title bar).
+fs.mkdirSync(path.join(root, 'public'), { recursive: true });
+fs.copyFileSync(icon512, path.join(root, 'public', 'icon.png'));
+
+console.log('Marca gerada: build/icon.png, public/icon.png, build/icon.ico, build/installerSidebar.bmp, build/installerHeader.bmp, docs/social.png');

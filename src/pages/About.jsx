@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
-import { Github, Scale, AlertTriangle } from 'lucide-react';
+import { useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Github, Scale, AlertTriangle, Heart, ExternalLink } from 'lucide-react';
 import { call } from '../lib/api.js';
 import { useApp } from '../context.jsx';
 import { Page } from '../components/Page.jsx';
@@ -35,9 +36,16 @@ const AREAS = [
 
 export default function About() {
   const { info, catalog } = useApp();
+  const [params] = useSearchParams();
+  // The global search links straight to a section (?s=apoiar).
+  useEffect(() => {
+    const id = params.get('s');
+    if (id) document.getElementById(id)?.scrollIntoView({ block: 'center' });
+  }, [params]);
   return (
     <Page title="Sobre">
       <section className="about-hero">
+        <h1 className="sr-only">Sobre o ctrl</h1>
         <Wordmark />
         <div>
           <p>Desempenho, controle e estabilidade para o seu Windows, sem medo de quebrar nada.</p>
@@ -95,6 +103,16 @@ export default function About() {
           </div>
         </Card>
       </div>
+
+      <Card id="apoiar" title="Apoiar o desenvolvimento" icon={Heart} style={{ marginTop: 14 }}>
+        <div className="row wrap" style={{ alignItems: 'center', gap: 16 }}>
+          <p className="grow muted" style={{ margin: 0, minWidth: 260 }}>
+            O ctrl é gratuito e continua assim. Se ele te ajudou, dá para apoiar com qualquer valor, uma vez só, pelo site do mojo. É
+            opcional e não muda nada no app.
+          </p>
+          <button className="btn btn-sm" onClick={() => call('app:openSupport')}><ExternalLink /> Apoiar no site</button>
+        </div>
+      </Card>
     </Page>
   );
 }

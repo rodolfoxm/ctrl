@@ -94,9 +94,13 @@ function streamPowerShell(script, onLine) {
     }
   });
   child.on('error', () => {});
-  return () => {
+  const stop = () => {
     if (!child.killed) child.kill();
   };
+  // Long-running workers that read commands from stdin (the Batuta engine) use these.
+  stop.send = (line) => child.stdin.writable && child.stdin.write(`${line}\n`);
+  stop.onExit = (fn) => child.on('close', fn);
+  return stop;
 }
 
 module.exports = { runPowerShell, runJson, streamPowerShell, q };

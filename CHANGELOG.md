@@ -1,5 +1,20 @@
 # Changelog
 
+## Não lançado
+
+- **Core**, nova página para reger os processos:
+  - **Regras** por programa: prioridade, só P-cores ou só E-cores, prioridade de E/S e de GPU e modo de eficiência, aplicadas sempre que o programa abre.
+  - **Jogos detectados sozinhos:** tudo que roda das pastas de jogos da Steam, Epic, Xbox, EA, Ubisoft, Riot e Battle.net, da biblioteca do ctrl ou da lista do assistente ganha a regra de jogo, sem cadastrar nada. Launchers, anti-cheats e relatórios de erro ficam de fora.
+  - **Vigia:** se um programa escolhido passar do limite de CPU ou de memória por um tempo, recebe uma ação reversível (baixar a prioridade, ir para os E-cores ou só avisar), desfeita quando ele se acalma. Nunca fecha programas.
+  - **Contenção:** programas em segundo plano que exageram descem de prioridade enquanto a CPU está carregada e voltam sozinhos.
+  - **Memória:** limpa a lista de espera quando ela cresce e a memória livre acaba, só durante os jogos se você quiser.
+  - **Núcleos:** quanto do processador fica sempre acordado e plano de energia que muda quando você para de usar o PC.
+  - **Assistente:** pergunta o que você joga (CS2, VALORANT, Warzone, Fortnite e outros) e monta a configuração certa para cada combinação.
+  - Só usa o agendador e a energia do Windows, sem tocar na memória dos jogos. Avisa se Process Lasso, ParkControl ou ISLC estiverem abertos.
+- Corrigido: o texto "Ativo" ao lado dos ajustes e os selos de sucesso ainda saíam em rosa, resto da cor antiga. Agora usam o ciano.
+- A busca (Ctrl+K) encontra as abas do Core e o Agendador, o Guia e o Sobre; procurar "Process Lasso", "ISLC", "memória" ou "apoiar" leva direto ao lugar certo.
+- Sobre: cartão **Apoiar o desenvolvimento**, que abre a página de apoio no site. É opcional e não muda nada no app.
+
 ## 1.1.0 — 02/11/2026
 
 ### Novidades

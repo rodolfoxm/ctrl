@@ -19,6 +19,8 @@ Usuários de Windows 10/11 (principalmente gamers) que querem desempenho, privac
 | Perfil | Perfis › Aplicar | Aplica um conjunto (Competitivo, Equilibrado, Privacidade, Notebook, PC modesto, Segurança reforçada ou personalizado) pulando o que não se aplica à máquina |
 | Verificação | Verificação › Verificar agora | Relê cada tweak aplicado no sistema e marca verificado / desfeito pelo Windows / sem leitura; reaplica com um clique |
 | Desfazer | Histórico › Central de desfazer | Restaura o valor original de um tweak, de tudo aplicado num período ou de tudo |
+| Core | Core › Configurar para meus jogos (ou as abas Regras, Contenção, Vigia, Memória e Núcleos) | Jogos detectados pela pasta da loja ou pela biblioteca; regras por programa (prioridade, P/E-cores, E/S, GPU, eficiência) aplicadas quando ele abre; programas de fundo contidos sob carga; lista de espera limpa durante jogos; núcleos e plano por atividade. Desligar restaura o que foi contido e o plano |
+| Apoiar | Sobre › Apoiar o desenvolvimento | Abre mojinho.com.br/apoiar no navegador; o pagamento é no Mercado Pago, fora do app, e nada muda no ctrl |
 | Modo ao vivo | Jogos › Modo ao vivo › ativar + abrir um jogo da biblioteca | Prioridade alta, plano de alto desempenho e timer de 0,5 ms só durante a sessão; tudo restaurado ao fechar |
 | Bandeja | Fechar a janela (opção "Manter na bandeja ao fechar", ligada por padrão) | O app continua rodando na bandeja com a Sentinela e o Modo ao vivo; o ícone reabre a janela e "Sair" encerra de vez |
 | Atualização | Aviso na barra lateral › Baixar atualização | Abre a página da versão nova no GitHub; o usuário instala por cima, estado preservado |

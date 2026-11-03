@@ -1,5 +1,5 @@
 /* ctrl — design tokens from the brand guide: black and charcoal greys, white ink,
-   one accent (#E52249) for status and data. Surfaces are separated by tone steps,
+   one accent (cyan #29CDF2) for status and data; red is reserved for errors. Surfaces are separated by tone steps,
    never by gradients or glows. */
 :root {
   --bg: #0a0a0a;
@@ -246,7 +246,7 @@ kbd {
   font-size: 11px; font-weight: 650; white-space: nowrap; background: var(--surface-2); color: var(--text-2);
 }
 .badge svg { width: 11px; height: 11px; }
-.badge.accent, .badge.success { background: var(--accent-muted); color: #ff5c7c; }
+.badge.accent, .badge.success { background: var(--accent-muted); color: var(--accent); }
 .badge.warning { background: var(--warning-muted); color: var(--warning); }
 .badge.danger { background: var(--danger-muted); color: var(--danger); }
 .badge.info { background: var(--info-muted); color: var(--info); }
@@ -348,7 +348,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tweak-details { grid-column: 2 / -1; margin-top: 4px; padding: 10px 12px; border-radius: var(--r-md); background: var(--bg); font-size: 12px; }
 .tweak-details code { display: block; color: var(--text-2); word-break: break-all; padding: 2px 0; user-select: text; }
 .state-label { font-size: 12px; font-weight: 650; min-width: 64px; text-align: right; }
-.state-label.on { color: #ff5c7c; }
+.state-label.on { color: var(--accent); }
 .state-label.off { color: var(--text-3); }
 .state-label.unknown { color: var(--text-3); }
 .bulkbar {
@@ -517,3 +517,23 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
 /* The "c" mark (app icon): the bracket sits just above the x-height, as in the icon. */
 .logo-mark .wordmark { transform: translate(-0.04em, -0.12em); }
 .logo-mark .wm-corner { top: 0.3em; left: -0.02em; }
+
+/* ---------------- Core (pages/Batuta.jsx) ---------------- */
+.field { display: grid; gap: 6px; font-size: 13px; color: var(--text-2); }
+.field .input { max-width: 200px; }
+.select-sm { height: 32px; padding: 0 8px; font-size: 12.5px; }
+.table-wrap { overflow-x: auto; margin: 0 -4px; }
+.batuta-rules td { white-space: nowrap; }
+.batuta-event { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+.batuta-event:last-child { border-bottom: 0; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.batuta-wizard { width: min(620px, calc(100vw - 40px)); }
+.wizard-games { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.wizard-game { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface-1); color: var(--text-2); cursor: pointer; font-size: 13.5px; }
+.wizard-game:hover { border-color: var(--text-3); color: var(--text-1); }
+.wizard-game.on { border-color: var(--accent); background: var(--accent-muted); color: var(--text-1); }
+.wizard-game:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wizard-why { margin: 0 0 12px; padding-left: 18px; display: grid; gap: 8px; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
+
+/* Read by screen readers, not shown (pages whose visual title is a logo). */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

@@ -35,7 +35,7 @@ function guessExe(dir, depth = 0, best = { file: null, size: 0 }) {
   return best;
 }
 
-async function steamGames() {
+async function steamLibraries() {
   const res = await runPowerShell("(Get-ItemProperty 'HKCU:\\Software\\Valve\\Steam' -ErrorAction SilentlyContinue).SteamPath");
   const steamPath = res.ok && res.stdout ? path.normalize(res.stdout) : null;
   if (!steamPath) return [];
@@ -44,8 +44,12 @@ async function steamGames() {
     const vdf = fs.readFileSync(path.join(steamPath, 'steamapps', 'libraryfolders.vdf'), 'utf8');
     for (const m of vdf.matchAll(/"path"\s+"([^"]+)"/g)) libs.add(path.normalize(m[1].replace(/\\\\/g, '\\')));
   } catch {}
+  return [...libs];
+}
+
+async function steamGames() {
   const games = [];
-  for (const lib of libs) {
+  for (const lib of await steamLibraries()) {
     const apps = path.join(lib, 'steamapps');
     let files;
     try {
@@ -86,6 +90,20 @@ function epicGames() {
     } catch {}
   }
   return games;
+}
+
+/**
+ * Folders whose executables are games: every Steam library's steamapps\common, each Epic install and the
+ * default folders of the Xbox, Riot, EA, Ubisoft and Battle.net launchers that exist on this PC.
+ */
+async function gameFolders() {
+  const dirs = (await steamLibraries()).map((l) => path.join(l, 'steamapps', 'common'));
+  dirs.push(...epicGames().map((g) => path.dirname(g.exe)));
+  const pf = process.env.ProgramFiles || 'C:\\Program Files';
+  const pf86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+  const drive = process.env.SystemDrive || 'C:';
+  dirs.push(`${drive}\\XboxGames`, `${drive}\\Riot Games`, path.join(pf, 'EA Games'), path.join(pf86, 'Ubisoft', 'Ubisoft Game Launcher', 'games'), path.join(pf86, 'Call of Duty'), path.join(pf86, 'Overwatch'));
+  return [...new Set(dirs.filter((d) => fs.existsSync(d)).map((d) => `${path.normalize(d).toLowerCase().replace(/\\+$/, '')}\\`))];
 }
 
 async function scan() {
@@ -156,4 +174,4 @@ function findGame(id) {
   return store.load().games.find((g) => g.id === id);
 }
 
-module.exports = { scan, addManual, removeGame, gameTweak, findGame, OPTIONS };
+module.exports = { scan, addManual, removeGame, gameTweak, findGame, gameFolders, OPTIONS };

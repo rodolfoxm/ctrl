@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, Notification, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -20,6 +20,7 @@ const health = require('./tools/health.cjs');
 const scheduler = require('./tools/scheduler.cjs');
 const updates = require('./updates.cjs');
 const bufferbloat = require('./tools/bufferbloat.cjs');
+const batuta = require('./batuta.cjs');
 
 const devUrlArg = process.argv.find((a) => a.startsWith('--dev-url='));
 const DEV_URL = process.env.VITE_DEV_SERVER_URL || (devUrlArg ? devUrlArg.slice('--dev-url='.length) : null);
@@ -115,6 +116,7 @@ async function confirmQuit() {
 async function quitApp() {
   if (!(await confirmQuit())) return;
   quitting = true;
+  await batuta.stop();
   hardware.stopLive(true);
   sys.timerReset();
   await livegame.stop();
@@ -129,6 +131,7 @@ function createWindow() {
     minHeight: 660,
     frame: false,
     backgroundColor: '#0a0a0a',
+    icon: ICON,
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -205,6 +208,7 @@ handle('app:relaunchAdmin', () => {
 handle('app:checkUpdate', (force) => updates.check(force));
 handle('app:openRelease', () => updates.openRelease());
 handle('app:openRepo', () => updates.openRepo());
+handle('app:openSupport', () => updates.openSupport());
 handle('win:minimize', () => win?.minimize());
 handle('win:toggleMaximize', () => (win?.isMaximized() ? win.unmaximize() : win?.maximize()));
 handle('win:close', () => win?.close());
@@ -487,6 +491,21 @@ handle('net:benchmark', () => net.benchmark());
 handle('net:setDns', (id) => net.setProvider(id));
 handle('net:revertDns', () => net.revertDns());
 handle('net:latency', (hosts) => net.latency(hosts));
+
+// ---------- Core (interno: batuta) — regras de processo, contenção, memória e núcleos ----------
+const hostInfo = async () => {
+  const m = await machine.get().catch(() => null);
+  return { hybrid: !!m?.hybrid, laptop: !!m?.laptop };
+};
+handle('batuta:state', async () => ({ ...batuta.state(), ...(await hostInfo()), rivals: await batuta.rivals() }));
+handle('batuta:save', (patch) => batuta.save(patch));
+handle('batuta:processes', () => batuta.processes());
+handle('batuta:purge', () => batuta.purgeNow());
+handle('batuta:suggest', async (gameIds, opts = {}) => batuta.suggest(gameIds, { ...(await hostInfo()), ...opts }));
+handle('batuta:plans', () => batuta.listPlans());
+handle('batuta:parking', () => batuta.parking());
+handle('batuta:setParking', (v) => batuta.setParking(v));
+handle('batuta:restoreParking', () => batuta.restoreParking());
 let bloatRun = null;
 handle('net:bufferbloat', () => {
   bloatRun ??= bufferbloat.run((p) => send('net:bloat', p)).finally(() => {
@@ -616,6 +635,13 @@ if (TASK) {
     createWindow();
     syncTray();
     startSentinel();
+    batuta.start((e) => {
+      send('batuta:event', e);
+      // The Vigia's "Só avisar" action: a Windows notification, since the window may be hidden in the tray.
+      if (e.type === 'watchdog' && e.action === 'notify' && Notification.isSupported()) {
+        new Notification({ title: 'Vigia do ctrl', body: `${e.name} passou do limite (${e.value}${e.metric === 'ram' ? ' MB de memória' : '% da CPU'}).`, icon: ICON }).show();
+      }
+    });
     if (store.load().settings.liveGameMode) livegame.start((e) => send('livegame:event', e));
   });
   app.on('window-all-closed', quitApp);

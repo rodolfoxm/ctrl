@@ -25,6 +25,10 @@ electron/
   updates.cjs       consulta a última release em github.com/rodolfoxm/ctrl e abre a página dela
   machine.cjs       perfil da máquina que oculta tweaks (GPU, CPU híbrida, notebook, Defender…)
   livegame.cjs      Modo ao vivo (polling de processos a cada 5 s)
+  batuta.cjs        Core (nome interno batuta): worker PowerShell contínuo (regras, contenção, limpeza da lista de espera) + plano por atividade e núcleos
+  batuta-worker.cjs script do worker: regras, detecção de jogos por pasta, Vigia, contenção e limpeza de memória
+  batuta-native.cjs helper C# (Add-Type) com as APIs de agendador, energia e lista de memória
+  batuta-presets.cjs jogos conhecidos e o assistente que monta a configuração
   hardware.cjs      especificações (CIM) e monitor ao vivo (PDH com nomes em inglês)
   backups.cjs games.cjs debloat.cjs
   catalog/          dados: helpers.cjs + performance/gaming/network/system/security.cjs + index.cjs
@@ -63,6 +67,11 @@ Sem banco. `state.json` guarda `applied` (id → snapshot, data, origem), histó
 | IFEO só com nomes de executável específicos | A regra vale para qualquer exe com o mesmo nome (ex.: `Agent.exe` foi rejeitado) | — |
 | Bufferbloat mede o handshake TCP com 1.1.1.1:443, não ICMP | Funciona sem administrador e sem depender de ping liberado; a carga vem dos endpoints públicos de teste da Cloudflare com limite de tempo e de dados (250 MB down, 120 MB up) | Houver um servidor de teste próprio |
 | Fora de propósito (comparado a Paragon, winutil, optimizerDuck e O&O ShutUp10): bloquear o Windows Update, desligar mitigações de processo (`Set-ProcessMitigation`), baixar drivers/DDU/runtimes, mexer na BIOS, travar P-states/power gating da GPU, pôr ~200 serviços em manual de uma vez, desligar MAPS/envio de amostras do Defender, remover Edge/OneDrive à força, desativar IPv6 e políticas que só valem no Enterprise/Education (ex.: esconder "Recomendados" via `IsEducationEnvironment`) | Deixam o PC menos seguro, baixam executáveis de terceiros ou não têm desfazer confiável | Houver como fazer com backup e revert verificáveis |
+| O Core roda num worker PowerShell que lê "stop" do stdin | Um processo só, com o helper C# compilado uma vez; stdin fechado (ctrl morreu) também encerra e devolve a prioridade do que foi contido | Houver um serviço nativo |
+| O Core detecta jogos pelo caminho do executável (pastas das lojas e biblioteca), uma vez por processo | O Process Lasso só reconhece o que foi cadastrado; o caminho vem do Windows (QueryFullProcessImageName), sem abrir a memória do jogo | Surgir uma loja nova com pasta própria |
+| Vigia só com ações reversíveis; SmartTrim e prioridade por thread ficaram de fora | Fechar processo perde trabalho; aparar a memória causa travadas em jogos; threads mudam a cada execução e mexer nelas é o acesso que anti-cheats vigiam | — |
+| O Core não troca plano durante o Modo ao vivo | O Modo ao vivo já é dono do plano e do timer durante a sessão; dois donos se desfariam | Os dois virarem um só |
+| O Core só usa agendador e energia (prioridade, afinidade, E/S, GPU, EcoQoS, lista de espera) | É o que o Process Lasso faz (lido nas importações dele); handles nunca pedem leitura ou escrita de memória, então anti-cheats não têm o que acusar | — |
 | Atualização só avisa e abre a página da release | Sem assinatura de código, auto-update silencioso seria frágil e pouco transparente; instalar por cima preserva o estado | Houver assinatura e canal de update |
 | Nomes de objetos do Windows com legado (`catalog/constants.cjs`) | O plano de energia e a regra de firewall criados como "mojoTWEEKS" continuam reconhecidos por `check` e `revert` | Ninguém mais tiver a versão 0.1 |
 | Mock do navegador usa o catálogo real exportado | Desenvolver a UI sem tocar no sistema | Catálogo mudar: rode `scripts/export-catalog.cjs` |
