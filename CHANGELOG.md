@@ -1,6 +1,6 @@
 # Changelog
 
-## Não lançado
+## 1.2.0 — 03/11/2026
 
 - **Core**, nova página para reger os processos:
   - **Regras** por programa: prioridade, só P-cores ou só E-cores, prioridade de E/S e de GPU e modo de eficiência, aplicadas sempre que o programa abre.

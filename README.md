@@ -51,6 +51,7 @@ sempre conseguem desfazer. O ctrl foi feito ao contrário:
   <img src="docs/screenshots/profiles.png" width="420" alt="Perfis">
   <img src="docs/screenshots/verify.png" width="420" alt="Verificação">
   <img src="docs/screenshots/games.png" width="420" alt="Modo ao vivo">
+  <img src="docs/screenshots/core.png" width="420" alt="Core">
 </p>
 </details>
 

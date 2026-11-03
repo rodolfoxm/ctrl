@@ -53,6 +53,7 @@ undo it. ctrl works the other way around:
   <img src="docs/screenshots/profiles.png" width="420" alt="Profiles">
   <img src="docs/screenshots/verify.png" width="420" alt="Verification">
   <img src="docs/screenshots/games.png" width="420" alt="Live mode">
+  <img src="docs/screenshots/core.png" width="420" alt="Core">
 </p>
 </details>
 

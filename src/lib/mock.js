@@ -18,10 +18,16 @@ const BATUTA_GAMES = [
   { id: 'apex', name: 'Apex Legends', exe: 'r5apex_dx12', cores: 'all', ram: 'medium' },
   { id: 'tarkov', name: 'Escape from Tarkov', exe: 'EscapeFromTarkov', cores: 'all', ram: 'heavy' },
 ];
+// ?demo (README screenshots) shows the Core on, set up the way a CS2 player would have it.
+const BATUTA_DEMO = typeof location !== 'undefined' && location.search.includes('demo');
 const batutaMock = {
   config: {
-    enabled: false,
-    rules: [],
+    enabled: BATUTA_DEMO,
+    rules: BATUTA_DEMO ? [
+      { exe: 'cs2.exe', name: 'Counter-Strike 2', game: true, priority: 'high', cores: 'p', io: 'normal', gpu: 'high', efficiency: 'never' },
+      { exe: 'Discord.exe', name: 'Discord', game: false, priority: 'normal', cores: 'e', io: 'normal', gpu: 'low', efficiency: 'default' },
+      { exe: 'Spotify.exe', name: 'Spotify', game: false, priority: 'normal', cores: 'e', io: 'normal', gpu: 'low', efficiency: 'default' },
+    ] : [],
     containment: { enabled: true, total: 70, proc: 10, overMs: 2700, restore: 2, minMs: 2100, exclusions: [] },
     memory: { enabled: false, listMB: 1024, freeMB: 4096, onlyGaming: true, exclusions: [] },
     boost: { enabled: false, activePlan: null, idlePlan: '381b4222-f694-41f0-9685-ff5bb260df2e', idleMin: 5 },

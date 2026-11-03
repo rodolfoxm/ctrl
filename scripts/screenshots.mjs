@@ -15,14 +15,19 @@ const PAGES = {
   profiles: '/profiles',
   verify: '/guardian',
   games: '/gaming/live',
+  core: '/core',
   about: '/about',
 };
 const out = path.join(root, 'docs', 'screenshots');
 fs.mkdirSync(out, { recursive: true });
 for (const [name, route] of Object.entries(PAGES)) {
+  const file = path.join(out, `${name}.png`);
+  const before = fs.existsSync(file) ? fs.statSync(file).mtimeMs : 0;
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'ctrl-shot-'));
   execFileSync(EDGE, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--window-size=1440,900', '--virtual-time-budget=6000',
-    `--user-data-dir=${profile}`, `--screenshot=${path.join(out, `${name}.png`)}`, `${base}/?demo#${route}`], { stdio: 'ignore' });
+    `--user-data-dir=${profile}`, `--screenshot=${file}`, `${base}/?demo#${route}`], { stdio: 'ignore' });
   fs.rmSync(profile, { recursive: true, force: true });
+  // Edge exits quietly when the page doesn't load (dev server down): don't report a stale file as new.
+  if (!fs.existsSync(file) || fs.statSync(file).mtimeMs === before) throw new Error(`Nada foi salvo em ${name}.png. O npm run web está rodando em ${base}?`);
   console.log(`docs/screenshots/${name}.png`);
 }
