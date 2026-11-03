@@ -131,18 +131,36 @@ async function requireAdmin(t) {
   }
 }
 
-/** Applies one tweak. `findTweak` resolves conflicting ids so they're reverted first. */
-async function apply(t, { findTweak, source = 'manual' } = {}) {
+/**
+ * Applies one tweak. `findTweak` resolves conflicting ids so they're reverted first. `active` is the live
+ * state when the caller already read it (batches read all at once); otherwise it's read here.
+ * A tweak that is already in effect is not run again: nothing changes, so nothing asks for a restart, and
+ * settings Windows locks (bcdedit values under Secure Boot) are not rewritten with the value they already have.
+ */
+async function apply(t, { findTweak, source = 'manual', active } = {}) {
   try {
     await requireAdmin(t);
+    let conflictReverted = false;
     for (const cid of t.conflicts || []) {
       const other = findTweak?.(cid);
       if (other && store.load().applied[cid]) {
         const r = await revert(other, { source: `conflito com ${t.name}` });
         if (!r.ok) throw new Error(`Não foi possível desfazer "${other.name}", que conflita com este tweak: ${r.error}`);
+        conflictReverted = true;
       }
     }
     const already = store.load().applied[t.id];
+    const live = active === undefined || conflictReverted ? (await checkMany([t]))[t.id] : active;
+    if (live === true) {
+      if (!already) {
+        const snapshot = await takeSnapshot(t);
+        store.update((s) => {
+          s.applied[t.id] = { name: t.name, module: t.module, at: new Date().toISOString(), snapshot, source };
+        });
+        store.log({ action: 'apply', id: t.id, name: t.name, module: t.module, ok: true, source, detail: 'já estava assim' });
+      }
+      return { ok: true, restart: 'none', unchanged: true };
+    }
     const snapshot = already ? already.snapshot : await takeSnapshot(t);
     const res = await runPowerShell(applyScript(t), { timeout: t.timeout || 120000 });
     if (!res.ok) throw new Error(res.stderr || 'Falha ao aplicar.');
@@ -180,10 +198,12 @@ const RESTART_RANK = { none: 0, explorer: 1, logoff: 2, reboot: 3 };
 async function runMany(tweaks, op, opts = {}, onProgress) {
   const results = [];
   let restart = 'none';
+  // One read for the whole batch: what is already in effect is skipped (and asks for no restart).
+  const live = op === 'apply' ? await checkMany(tweaks).catch(() => ({})) : {};
   for (let i = 0; i < tweaks.length; i++) {
     const t = tweaks[i];
     onProgress?.({ index: i, total: tweaks.length, id: t.id, name: t.name });
-    const r = op === 'apply' ? await apply(t, opts) : await revert(t, opts);
+    const r = op === 'apply' ? await apply(t, { ...opts, active: live[t.id] ?? null }) : await revert(t, opts);
     results.push({ id: t.id, name: t.name, ...r });
     if (r.ok && RESTART_RANK[r.restart] > RESTART_RANK[restart]) restart = r.restart;
   }

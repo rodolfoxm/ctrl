@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 — 03/11/2026
+
+- Corrigido: aplicar um perfil (ou a otimização recomendada) de novo pedia para reiniciar o PC mesmo sem mudar nada. Agora o ctrl confere antes e só aplica o que ainda não está valendo; o que já estava fica como está e não pede reinício.
+- Corrigido: "Garantir que a depuração do kernel está desativada" e "Garantir que drivers de teste estão desativados" falhavam com "bcdedit falhou" em PCs com Secure Boot, que já mantém os dois desligados e bloqueia a mudança. Como já estão como deveriam, o ctrl não tenta mais escrever.
+
 ## 1.2.0 — 03/11/2026
 
 - **Core**, nova página para reger os processos:

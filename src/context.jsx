@@ -211,11 +211,15 @@ export function AppProvider({ children }) {
         return res;
       }
       const okCount = res.results?.filter((r) => r.ok).length ?? 0;
+      const same = res.results?.filter((r) => r.ok && r.unchanged).length ?? 0;
       const failed = res.failed || [];
+      const sameNote = same ? ` ${same === okCount ? 'Tudo' : same} já estava assim.` : '';
       if (failed.length) {
-        toast(`${okCount} concluído(s), ${failed.length} com erro: ${failed.slice(0, 2).map((f) => f.name).join(', ')}${failed.length > 2 ? '…' : ''}`, { tone: 'warn', duration: 9000 });
+        toast(`${okCount} concluído(s), ${failed.length} com erro: ${failed.slice(0, 2).map((f) => f.name).join(', ')}${failed.length > 2 ? '…' : ''}.${sameNote}`, { tone: 'warn', duration: 9000 });
+      } else if (same === okCount && okCount) {
+        toast('Tudo já estava aplicado. Nada mudou, então não precisa reiniciar.', { tone: 'success' });
       } else {
-        toast(`${okCount} alteração(ões) concluída(s).`, { tone: 'success' });
+        toast(`${okCount - same} alteração(ões) concluída(s).${sameNote}`, { tone: 'success' });
       }
       noteRestart(res.restart);
       return res;
