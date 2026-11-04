@@ -164,7 +164,24 @@ const handlers = {
   'win:minimize': async () => {}, 'win:toggleMaximize': async () => {}, 'win:close': async () => {},
   'system:restart': async () => ({ ok: true }), 'system:logoff': async () => ({ ok: true }),
   // Add ?update to the URL to preview the "new version" card.
-  'app:checkUpdate': async () => ({ enabled: true, current: '1.0.0', version: '1.1.0', available: location.search.includes('update'), url: 'https://github.com/rodolfoxm/ctrl/releases/latest', checkedAt: new Date().toISOString() }),
+  'app:checkUpdate': async () => ({
+    enabled: true, current: '1.2.2', version: '1.3.0', available: location.search.includes('update'),
+    url: 'https://github.com/rodolfoxm/ctrl/releases/latest', checkedAt: new Date().toISOString(),
+    asset: { name: 'ctrl-Setup-1.3.0.exe', url: 'https://github.com/rodolfoxm/ctrl/releases/download/v1.3.0/ctrl-Setup-1.3.0.exe', size: 85200000 },
+    releases: [
+      { version: '1.3.0', date: new Date().toISOString(), notes: '- **Atualização dentro do app:** aviso ao lado de Administrador e ao abrir, com as novidades.\n- Instalar agora baixa, confere e abre o instalador.\n\n---\n\n**Como instalar:** rodapé que não aparece.' },
+      { version: '1.2.2', date: '2026-11-04T12:00:00Z', notes: '- **Instalador:** nova etapa "Iniciar o ctrl com o Windows".\n- Corrigido: limite de 30 minutos da tarefa de inicialização.' },
+      { version: '1.2.1', date: '2026-11-03T23:00:00Z', notes: '- Corrigido: reaplicar um perfil pedia para reiniciar sem mudar nada.\n  - Agora confere antes.\n- Ver [o repositório](https://github.com/rodolfoxm/ctrl).' },
+    ],
+  }),
+  'app:installUpdate': async () => {
+    for (let got = 0; got <= 85200000; got += 8520000) {
+      emit('app:updateProgress', { got, size: 85200000 });
+      await wait(300);
+    }
+    emit('app:updateProgress', { got: 85200000, size: 85200000, done: true });
+    return { ok: true };
+  },
   'app:openRelease': async () => (window.open('https://github.com/rodolfoxm/ctrl/releases/latest', '_blank'), { ok: true }),
   'app:openRepo': async () => (window.open('https://github.com/rodolfoxm/ctrl', '_blank'), { ok: true }),
   'app:openSupport': async () => (window.open('https://www.mojinho.com.br/apoiar', '_blank'), { ok: true }),

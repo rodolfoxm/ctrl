@@ -24,6 +24,7 @@ export function AppProvider({ children }) {
   const [progress, setProgress] = useState(null);
   const [pendingRestart, setPendingRestart] = useState('none');
   const [update, setUpdate] = useState(null);
+  const [updateOpen, setUpdateOpen] = useState(false);
   const restorePointDone = useRef(false);
 
   const refreshState = useCallback(async () => {
@@ -51,7 +52,16 @@ export function AppProvider({ children }) {
   // Release check on GitHub, once per launch (the main process caches it and honours the setting).
   const checkUpdate = useCallback(async (force) => {
     const res = await call('app:checkUpdate', !!force);
-    if (res && res.ok !== false) setUpdate(res);
+    if (res && res.ok !== false) {
+      setUpdate(res);
+      // Opens by itself once per launch while a new version is out (a renderer reload doesn't count).
+      try {
+        if (res.available && !force && sessionStorage.getItem('ctrl.updateShown') !== res.version) {
+          sessionStorage.setItem('ctrl.updateShown', res.version);
+          setUpdateOpen(true);
+        }
+      } catch {}
+    }
     return res;
   }, []);
   useEffect(() => {
@@ -249,7 +259,7 @@ export function AppProvider({ children }) {
   const value = {
     info, catalog, tweakById, status, statusLoading, applied, settings, onboarded, setOnboarded, busy, pendingRestart,
     setPendingRestart, toast, confirm, updateSettings, toggleTweak, applyMany, revertMany, runBatch, refreshStatus,
-    refreshState, ensureRestorePoint, noteRestart, blockIfNotAdmin, update, checkUpdate,
+    refreshState, ensureRestorePoint, noteRestart, blockIfNotAdmin, update, checkUpdate, updateOpen, setUpdateOpen,
   };
 
   return (

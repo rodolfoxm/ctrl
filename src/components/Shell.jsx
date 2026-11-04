@@ -7,9 +7,10 @@ import { NAV, FOOTER_NAV } from '../nav.js';
 import { Logo, Wordmark } from './ui.jsx';
 import GlobalSearch from './GlobalSearch.jsx';
 import LiveGamePrompt from './LiveGamePrompt.jsx';
+import UpdateDialog from './UpdateDialog.jsx';
 
 function TopBar({ onSearch }) {
-  const { info, pendingRestart, setPendingRestart } = useApp();
+  const { info, pendingRestart, setPendingRestart, update, setUpdateOpen } = useApp();
   const [maximized, setMaximized] = useState(false);
   useEffect(() => on('win:state', (s) => setMaximized(s.maximized)), []);
   return (
@@ -27,6 +28,11 @@ function TopBar({ onSearch }) {
       {pendingRestart === 'logoff' && (
         <button className="btn btn-sm pill" onClick={() => call('system:logoff')}>
           <LogOut /> Sair e entrar para concluir
+        </button>
+      )}
+      {update?.available && (
+        <button className="btn btn-sm btn-accent pill update-pill" onClick={() => setUpdateOpen(true)} title="Ver novidades e instalar">
+          <Download /> Nova versão {update.version}
         </button>
       )}
       {info && (
@@ -54,13 +60,13 @@ function isActive(item, pathname) {
 }
 
 function UpdateCard() {
-  const { update } = useApp();
+  const { update, setUpdateOpen } = useApp();
   if (!update?.available) return null;
   return (
     <div className="update-card" role="status">
       <strong>Nova versão {update.version}</strong>
-      <span className="muted">Baixe no GitHub e instale por cima. Seus ajustes e backups são mantidos.</span>
-      <button className="btn btn-xs btn-accent" onClick={() => call('app:openRelease')}><Download /> Baixar atualização</button>
+      <span className="muted">Instala por cima, mantendo seus ajustes e backups.</span>
+      <button className="btn btn-xs btn-accent" onClick={() => setUpdateOpen(true)}><Download /> Ver e instalar</button>
     </div>
   );
 }
@@ -164,6 +170,7 @@ export default function Shell({ children }) {
       </div>
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} onNavigate={(p) => (setSearchOpen(false), navigate(p))} />}
       <LiveGamePrompt />
+      <UpdateDialog />
     </div>
   );
 }

@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 // The renderer only names a channel and passes data; the main process decides what
 // runs (tweak ids are looked up in the catalog, never sent as scripts).
 const CHANNEL = /^[a-z]+:[a-zA-Z]+$/;
-const EVENTS = new Set(['win:state', 'hw:update', 'tweaks:progress', 'guardian:sweep', 'livegame:event', 'net:bloat', 'batuta:event', 'app:health']);
+const EVENTS = new Set(['win:state', 'hw:update', 'tweaks:progress', 'guardian:sweep', 'livegame:event', 'net:bloat', 'batuta:event', 'app:health', 'app:updateProgress']);
 
 contextBridge.exposeInMainWorld('ctrl', {
   invoke: (channel, ...args) => {

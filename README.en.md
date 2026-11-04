@@ -72,7 +72,8 @@ undo it. ctrl works the other way around:
 
 ### Updates
 
-When a new version is out, ctrl shows a notice in the sidebar with a **Download update** button. Install it
+When a new version is out, ctrl shows "Nova versão" at the top and a window on launch with what changed
+in it and the two before. **Instalar agora** downloads the installer from GitHub, checks the file and installs
 over the current one: tweaks, backups and settings are kept. You can turn the check off in
 **Configurações → Atualizações**.
 

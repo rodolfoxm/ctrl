@@ -70,8 +70,9 @@ sempre conseguem desfazer. O ctrl foi feito ao contrário:
 
 ### Atualizações
 
-Quando sai uma versão nova, o ctrl mostra um aviso na barra lateral com o botão **Baixar atualização**.
-Basta instalar por cima: ajustes, backups e configurações são mantidos. Dá para desligar essa consulta em
+Quando sai uma versão nova, o ctrl mostra "Nova versão" no topo e uma janela ao abrir, com as novidades
+dela e das duas anteriores. **Instalar agora** baixa o instalador do GitHub, confere o arquivo e instala por
+cima: ajustes, backups e configurações são mantidos. Dá para desligar essa consulta em
 **Configurações → Atualizações**.
 
 ## Usando com segurança

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 — 04/11/2026
+
+- **Atualização dentro do app.** Quando sai versão nova, aparece "Nova versão" ao lado de Administrador e uma janela ao abrir o ctrl, com as novidades dela e das duas versões anteriores (as mais antigas ficam no GitHub).
+- **Instalar agora:** baixa o instalador direto do GitHub, confere o tamanho e a assinatura SHA-256 publicada lá, abre o instalador e fecha o ctrl. Antes era preciso baixar pelo navegador.
+- A janela aparece uma vez por abertura enquanto houver versão nova; "Agora não" fecha até a próxima vez.
+
 ## 1.2.2 — 04/11/2026
 
 - **Instalador:** nova etapa "Iniciar o ctrl com o Windows", já marcada. Cria a inicialização durante a instalação, quando você acabou de autorizar como administrador. Desinstalar remove as tarefas do ctrl (atualizar não).

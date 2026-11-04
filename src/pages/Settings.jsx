@@ -76,7 +76,7 @@ function Data() {
 }
 
 function Updates() {
-  const { info, catalog, settings, updateSettings, update, checkUpdate, toast } = useApp();
+  const { info, catalog, settings, updateSettings, update, checkUpdate, toast, setUpdateOpen } = useApp();
   const run = async () => {
     const res = await checkUpdate(true);
     if (res?.ok === false) toast(`Não foi possível verificar: ${res.error}`, { tone: 'error' });
@@ -97,7 +97,7 @@ function Updates() {
         {update?.available && (
           <Callout tone="accent" icon={Download}>
             Baixe o instalador novo e instale por cima: seus ajustes, backups e configurações são mantidos.
-            <div style={{ marginTop: 10 }}><button className="btn btn-sm btn-accent" onClick={() => call('app:openRelease')}><Download /> Baixar {update.version}</button></div>
+            <div style={{ marginTop: 10 }}><button className="btn btn-sm btn-accent" onClick={() => setUpdateOpen(true)}><Download /> Ver e instalar a {update.version}</button></div>
           </Callout>
         )}
         <Row title="Procurar atualizações ao abrir" desc="Consulta a página de versões do projeto no GitHub. Nenhum dado seu é enviado, e nada é baixado sem você pedir.">

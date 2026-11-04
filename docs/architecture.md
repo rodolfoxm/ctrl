@@ -75,7 +75,7 @@ Sem banco. `state.json` guarda `applied` (id → snapshot, data, origem), histó
 | Vigia só com ações reversíveis; SmartTrim e prioridade por thread ficaram de fora | Fechar processo perde trabalho; aparar a memória causa travadas em jogos; threads mudam a cada execução e mexer nelas é o acesso que anti-cheats vigiam | — |
 | O Core não troca plano durante o Modo ao vivo | O Modo ao vivo já é dono do plano e do timer durante a sessão; dois donos se desfariam | Os dois virarem um só |
 | O Core só usa agendador e energia (prioridade, afinidade, E/S, GPU, EcoQoS, lista de espera) | É o que o Process Lasso faz (lido nas importações dele); handles nunca pedem leitura ou escrita de memória, então anti-cheats não têm o que acusar | — |
-| Atualização só avisa e abre a página da release | Sem assinatura de código, auto-update silencioso seria frágil e pouco transparente; instalar por cima preserva o estado | Houver assinatura e canal de update |
+| Atualização instalada só com clique: baixa o .exe da release, confere tamanho e o SHA-256 que o GitHub publica (`digest`) e abre o instalador visível | Sem assinatura de código, auto-update silencioso seria frágil e pouco transparente; o instalador visível mostra os termos e a opção de iniciar com o Windows | Houver assinatura e canal de update |
 | Nomes de objetos do Windows com legado (`catalog/constants.cjs`) | O plano de energia e a regra de firewall criados como "mojoTWEEKS" continuam reconhecidos por `check` e `revert` | Ninguém mais tiver a versão 0.1 |
 | Mock do navegador usa o catálogo real exportado | Desenvolver a UI sem tocar no sistema | Catálogo mudar: rode `scripts/export-catalog.cjs` |
 

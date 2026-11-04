@@ -217,6 +217,14 @@ handle('app:relaunchAdmin', () => {
 });
 handle('app:checkUpdate', (force) => updates.check(force));
 handle('app:openRelease', () => updates.openRelease());
+handle('app:installUpdate', async () => {
+  const file = await updates.download((p) => send('app:updateProgress', p));
+  // openPath goes through the shell, which handles the installer's administrator prompt.
+  const err = await shell.openPath(file);
+  if (err) throw new Error(`Não foi possível abrir o instalador: ${err}`);
+  setTimeout(quitApp, 1500); // the installer replaces the files, so the ctrl gets out of the way
+  return { ok: true };
+});
 handle('app:openRepo', () => updates.openRepo());
 handle('app:openSupport', () => updates.openSupport());
 handle('win:minimize', () => win?.minimize());

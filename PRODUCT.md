@@ -23,7 +23,7 @@ Usuários de Windows 10/11 (principalmente gamers) que querem desempenho, privac
 | Apoiar | Sobre › Apoiar o desenvolvimento | Abre mojinho.com.br/apoiar no navegador; o pagamento é no Mercado Pago, fora do app, e nada muda no ctrl |
 | Modo ao vivo | Jogos › Modo ao vivo › ativar + abrir um jogo da biblioteca | Prioridade alta, plano de alto desempenho e timer de 0,5 ms só durante a sessão; tudo restaurado ao fechar |
 | Bandeja | Fechar a janela (opção "Manter na bandeja ao fechar", ligada por padrão) | O app continua rodando na bandeja com a Sentinela e o Modo ao vivo; o ícone reabre a janela e "Sair" encerra de vez |
-| Atualização | Aviso na barra lateral › Baixar atualização | Abre a página da versão nova no GitHub; o usuário instala por cima, estado preservado |
+| Atualização | Janela ao abrir ou "Nova versão" no topo › Instalar agora | Mostra as notas da nova e das 2 anteriores, baixa o instalador do GitHub conferindo tamanho e SHA-256, abre o instalador e fecha o ctrl; estado preservado |
 | Ferramentas | Rede, Sistema, Hardware | Benchmark e troca de DNS reversível, latência/jitter, bufferbloat (latência sob carga, nota A+ a F), limpeza, Windows Update, apps de inicialização, MSI, DPC, saúde de disco/bateria, boot |
 
 ## Escopo atual
@@ -32,7 +32,7 @@ Catálogo de 241 tweaks em 28 módulos, 12 correções (SFC, DISM, ChkDsk, rede�
 
 ## Fora de escopo
 
-Conta, ativação, telemetria, download ou instalação automática de atualizações, nuvem; captura de frametime (PresentMon), teste de banda (iperf3), S.M.A.R.T. via smartctl, escrita de BIOS; outros idiomas.
+Conta, ativação, telemetria, instalação silenciosa ou automática de atualizações (o download só acontece com Instalar agora), nuvem; captura de frametime (PresentMon), teste de banda (iperf3), S.M.A.R.T. via smartctl, escrita de BIOS; outros idiomas.
 
 ## Requisitos
 
