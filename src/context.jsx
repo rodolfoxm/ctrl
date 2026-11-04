@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, AlertTriangle, XCircle, Info } from 'lucide-react';
 import { call, on } from './lib/api.js';
+import { applyAccent } from './lib/accent.js';
 import { RISK } from './lib/format.js';
 
 const AppContext = createContext(null);
@@ -26,6 +27,10 @@ export function AppProvider({ children }) {
   const [update, setUpdate] = useState(null);
   const [updateOpen, setUpdateOpen] = useState(false);
   const restorePointDone = useRef(false);
+
+  useEffect(() => {
+    if (settings) applyAccent(settings.accent);
+  }, [settings?.accent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshState = useCallback(async () => {
     const s = await call('state:get');

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.1 — 04/11/2026
+
+- **Cor nova e do seu jeito.** O destaque do ctrl agora é verde-limão (#C8FF00), e dá para trocar em Configurações → Aparência: rosa, laranja, lilás, ciano, branco ou qualquer outra cor.
+- **Saúde do sistema** virou uma barra contínua, com um pulso leve na ponta.
+- Nova animação de abertura.
+- O instalador passa a ser gerado pelo GitHub Actions a partir do código do repositório.
+
 ## 1.3.0 — 04/11/2026
 
 - **Atualização dentro do app.** Quando sai versão nova, aparece "Nova versão" ao lado de Administrador e uma janela ao abrir o ctrl, com as novidades dela e das duas versões anteriores (as mais antigas ficam no GitHub).

@@ -120,8 +120,8 @@ export default function Dashboard() {
         <Card>
           <div className="stat-label" style={{ fontSize: 15, color: 'var(--text-1)' }}>Saúde do sistema</div>
           <div className="score-value"><b>{s.score}</b><span>/ 100</span></div>
-          <div className="segments" role="meter" aria-valuenow={s.score} aria-valuemin={0} aria-valuemax={100} aria-label="Saúde do sistema">
-            {Array.from({ length: 10 }, (_, i) => <i key={i} className={s.score >= (i + 1) * 10 - 5 ? 'on' : ''} />)}
+          <div className="health-bar" role="meter" aria-valuenow={s.score} aria-valuemin={0} aria-valuemax={100} aria-label="Saúde do sistema">
+            <div style={{ width: `${Math.max(0, Math.min(100, s.score))}%` }} />
           </div>
         </Card>
         <Card style={{ display: 'flex', alignItems: 'center' }}>

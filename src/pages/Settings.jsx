@@ -1,8 +1,10 @@
+import { useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Settings as Cog, SlidersHorizontal, Database, Download, Upload, FolderOpen, RotateCcw, ShieldCheck, RefreshCw, Github } from 'lucide-react';
+import { Settings as Cog, SlidersHorizontal, Database, Download, Upload, FolderOpen, RotateCcw, ShieldCheck, RefreshCw, Github, Palette, Check } from 'lucide-react';
 import { call } from '../lib/api.js';
 import { useApp } from '../context.jsx';
 import { ago } from '../lib/format.js';
+import { ACCENT_PRESETS, DEFAULT_ACCENT, applyAccent } from '../lib/accent.js';
 import { Page, Hero, SubNav } from '../components/Page.jsx';
 import { Card, Switch, Logo, Callout, ActionButton } from '../components/ui.jsx';
 
@@ -24,6 +26,46 @@ function Row({ title, desc, children }) {
   );
 }
 
+function Appearance() {
+  const { settings, updateSettings } = useApp();
+  const timer = useRef(null);
+  const current = (settings.accent || DEFAULT_ACCENT).toLowerCase();
+  // The color picker fires on every drag step: paint at once, save when the user stops.
+  const pick = (hex, now) => {
+    applyAccent(hex);
+    clearTimeout(timer.current);
+    if (now) updateSettings({ accent: hex });
+    else timer.current = setTimeout(() => updateSettings({ accent: hex }), 400);
+  };
+  return (
+    <Card title="Aparência" icon={Palette}>
+      <div className="small muted" style={{ marginBottom: 14 }}>
+        A cor de destaque do ctrl: botões, gráficos e status. A animação de abertura mantém as cores dela.
+      </div>
+      <div className="row wrap" style={{ gap: 10 }}>
+        {ACCENT_PRESETS.map((p) => (
+          <button
+            key={p.hex}
+            className={`swatch ${current === p.hex ? 'on' : ''}`}
+            style={{ background: p.hex }}
+            title={p.name}
+            aria-label={p.name}
+            aria-pressed={current === p.hex}
+            onClick={() => pick(p.hex, true)}
+          >
+            {current === p.hex && <Check />}
+          </button>
+        ))}
+        <label className="btn btn-sm" style={{ marginLeft: 4 }}>
+          <input type="color" className="swatch-input" value={current} onChange={(e) => pick(e.target.value)} aria-label="Escolher outra cor" />
+          Outra cor
+        </label>
+        {current !== DEFAULT_ACCENT && <button className="btn btn-sm btn-ghost" onClick={() => pick(DEFAULT_ACCENT, true)}>Restaurar padrão</button>}
+      </div>
+    </Card>
+  );
+}
+
 function General() {
   const { settings, updateSettings, info } = useApp();
   if (!settings) return null;
@@ -42,6 +84,7 @@ function General() {
         <Row title="Manter na bandeja ao fechar" desc="Fechar a janela deixa o ctrl rodando ao lado do relógio, com o Sentinela e o Modo ao vivo ativos. Para sair, use Sair no ícone da bandeja.">{sw('closeToTray')}</Row>
         <Row title="Iniciar com o Windows" desc="Abre em segundo plano ao entrar (na bandeja, ou minimizado se a opção acima estiver desligada), para o Sentinela e o Modo ao vivo funcionarem sem abrir o app.">{sw('startWithWindows', { disabled: !info?.isAdmin })}</Row>
       </Card>
+      <Appearance />
     </div>
   );
 }

@@ -29,6 +29,7 @@ const DEFAULTS = {
     closeToTray: true,
     intro: true,
     checkUpdates: true,
+    accent: '#c8ff00',
   },
 };
 

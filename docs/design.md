@@ -3,7 +3,7 @@
 ## Direção
 
 Interface em pt-BR para Windows desktop (janela mínima 1040×660), seguindo o guia de marca do **ctrl**: fundo quase preto, barra lateral
-e cartões em cinzas carvão separados por um degrau de tom, tinta branca e **um acento, ciano `#29CDF2`**, usado em status e dados (saúde do
+e cartões em cinzas carvão separados por um degrau de tom, tinta branca e **um acento, lima `#C8FF00` por padrão (o usuário pode trocar em Configurações → Aparência)**, usado em status e dados (saúde do
 sistema, interruptores ligados, gráficos ao vivo, confirmações). O botão principal de cada tela é branco com texto preto; sobre o acento, o texto é escuro (`--accent-ink`). Sem gradientes,
 brilhos ou vidro: superfícies planas.
 

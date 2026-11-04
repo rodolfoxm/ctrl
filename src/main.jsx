@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import '@fontsource-variable/plus-jakarta-sans';
 import './styles.css';
+import { applyStoredAccent } from './lib/accent.js';
 import { AppProvider, useApp } from './context.jsx';
 import Shell from './components/Shell.jsx';
 import Onboarding from './components/Onboarding.jsx';
@@ -70,6 +71,8 @@ function Root() {
     </Shell>
   );
 }
+
+applyStoredAccent();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

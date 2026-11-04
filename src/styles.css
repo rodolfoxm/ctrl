@@ -1,5 +1,5 @@
 /* ctrl — design tokens from the brand guide: black and charcoal greys, white ink,
-   one accent (cyan #29CDF2) for status and data; red is reserved for errors. Surfaces are separated by tone steps,
+   one accent (lime #C8FF00 by default, user-chosen in Settings; see lib/accent.js) for status and data; red is reserved for errors. Surfaces are separated by tone steps,
    never by gradients or glows. */
 :root {
   --bg: #0a0a0a;
@@ -12,28 +12,28 @@
   --border: #ffffff0d;
   --border-hover: #ffffff17;
   --border-strong: #ffffff26;
-  --accent: #29cdf2;
-  --accent-hover: #5ad9f5;
-  --accent-ink: #00141a;
-  --accent-muted: #29cdf21f;
-  --accent-subtle: #29cdf212;
-  --border-accent: #29cdf266;
+  --accent: #c8ff00;
+  --accent-hover: #d6ff40;
+  --accent-ink: #0a0a0a;
+  --accent-muted: #c8ff001f;
+  --accent-subtle: #c8ff0012;
+  --border-accent: #c8ff0066;
   --text-1: #ffffff;
   --text-2: #a3a3a3;
   --text-3: #6e6e6e;
   --text-4: #3a3a3a;
-  --success: #29cdf2;
-  --success-muted: #29cdf21a;
+  --success: #c8ff00;
+  --success-muted: #c8ff001a;
   --warning: #f5b941;
   --warning-muted: #f5b9411a;
   --danger: #ff4d5e;
   --danger-muted: #ff4d5e1a;
   --info: #d4d4d4;
   --info-muted: #d4d4d41a;
-  --c-cpu: #29cdf2;
+  --c-cpu: #c8ff00;
   --c-ram: #ffffff;
   --c-gpu: #a3a3a3;
-  --c-net: #29cdf2;
+  --c-net: #c8ff00;
   --c-disk: #6e6e6e;
   --topbar: 48px;
   --sidebar: 232px;
@@ -290,9 +290,13 @@ textarea.input { height: auto; padding: 10px 12px; resize: vertical; }
 
 .meter { height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
 .meter > div { height: 100%; border-radius: 999px; background: var(--accent); transition: width 0.5s var(--ease); }
-.segments { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; height: 8px; }
-.segments i { border-radius: 2px; background: var(--surface-3); transition: background 0.3s; }
-.segments i.on { background: var(--accent); }
+.health-bar { height: 8px; border-radius: 999px; background: var(--surface-3); }
+.health-bar > div { position: relative; height: 100%; border-radius: inherit; background: var(--accent); animation: health-fill 1s var(--ease) both; transition: width 0.6s var(--ease); }
+/* the only motion: a small soft pulse at the tip of the bar */
+.health-bar > div::after { content: ''; position: absolute; right: -2px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 var(--border-accent); animation: health-tip 2.4s ease-out 1s infinite; }
+@keyframes health-fill { from { width: 0; } }
+@keyframes health-tip { 0% { box-shadow: 0 0 0 0 var(--border-accent); } 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
+@media (prefers-reduced-motion: reduce) { .health-bar > div, .health-bar > div::after { animation: none; } }
 
 .stat { display: flex; flex-direction: column; gap: 4px; }
 .stat-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
@@ -336,7 +340,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
   background: var(--surface-0); border: 1px solid var(--border); border-radius: var(--r-lg); transition: border-color 0.14s;
 }
 .tweak:hover { border-color: var(--border-hover); }
-.tweak.on { border-color: #29cdf240; }
+.tweak.on { border-color: #c8ff0040; }
 .tweak.hidden-tweak { opacity: 0.55; }
 .check { flex-shrink: 0; cursor: pointer; width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border-strong); background: transparent; display: grid; place-items: center; padding: 0; color: #fff; }
 .check.checked { background: var(--accent); border-color: var(--accent); }
@@ -437,7 +441,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .palette-item .kind { margin-left: auto; font-size: 11.5px; color: var(--text-3); }
 .palette-section { font-size: 12px; font-weight: 600; color: var(--text-3); padding: 10px 12px 4px; }
 
-.intro { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #171717; cursor: pointer; } /* the video's own background */
+.intro { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #030303; cursor: pointer; } /* the video's own background */
 .intro video { width: 100%; height: 100%; object-fit: contain; }
 .intro.out { animation: intro-out 0.35s var(--ease) forwards; }
 @keyframes intro-out { to { opacity: 0; } }
@@ -557,3 +561,9 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 .update-pill { margin-right: 8px; }
 .update-notes .link-more { justify-self: start; display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 0; font: inherit; font-size: 12.5px; color: var(--text-2); cursor: pointer; }
 .update-notes .link-more:hover { color: var(--text-1); }
+
+.swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid transparent; display: grid; place-items: center; cursor: pointer; padding: 0; color: #0a0a0a; outline-offset: 3px; transition: transform 0.15s var(--ease); }
+.swatch:hover { transform: scale(1.08); }
+.swatch.on { border-color: var(--text-1); }
+.swatch svg { width: 16px; height: 16px; mix-blend-mode: difference; color: #fff; }
+.swatch-input { width: 18px; height: 18px; padding: 0; border: 0; background: none; cursor: pointer; }
