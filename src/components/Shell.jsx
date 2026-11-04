@@ -100,6 +100,23 @@ function Sidebar({ collapsed, onToggle }) {
   );
 }
 
+/** Shown when settings and tweak backups don't persist: almost always an antivirus restricting the ctrl. */
+function SaveBlockedBanner() {
+  const { info } = useApp();
+  if (!info?.saveBlocked) return null;
+  const av = info.antivirus?.length ? info.antivirus.join(' e ') : 'Um antivírus';
+  return (
+    <div className="callout danger save-blocked" role="alert">
+      <ShieldAlert />
+      <div className="grow">
+        <strong>{av} está impedindo o ctrl de salvar.</strong> Configurações, backups dos ajustes e o "Iniciar com o Windows" não ficam
+        guardados. Adicione <span className="mono">{'C:\\Program Files\\ctrl\\ctrl.exe'}</span> aos aplicativos confiáveis {info.antivirus?.length ? 'dele' : 'do seu antivírus'}
+        {/kaspersky/i.test(av) ? ' (Configurações › Ameaças e exclusões › Especificar aplicativos confiáveis, com tudo marcado)' : ''} e reabra o ctrl.
+      </div>
+    </div>
+  );
+}
+
 export default function Shell({ children }) {
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -140,7 +157,10 @@ export default function Shell({ children }) {
       <Sidebar collapsed={collapsed} onToggle={toggle} />
       <div className="column">
         <TopBar onSearch={() => setSearchOpen(true)} />
-        <main className="main">{children}</main>
+        <main className="main">
+          <SaveBlockedBanner />
+          {children}
+        </main>
       </div>
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} onNavigate={(p) => (setSearchOpen(false), navigate(p))} />}
       <LiveGamePrompt />

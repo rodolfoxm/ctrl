@@ -65,13 +65,42 @@ function load() {
   return cache;
 }
 
+// Some antivirus suites (Kaspersky's "restricted" group for unsigned apps) drop an app's writes without
+// returning an error, so every save is read back; a mismatch flags the state as not persisting.
+let blocked = false;
+const blockedListeners = [];
+
+function setBlocked(value) {
+  if (value && !blocked) blockedListeners.forEach((fn) => fn());
+  blocked = value;
+}
+
 function save() {
   const target = file();
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  const tmp = `${target}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(cache, null, 2), 'utf8');
-  fs.renameSync(tmp, target);
+  const json = JSON.stringify(cache, null, 2);
+  try {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    const tmp = `${target}.tmp`;
+    fs.writeFileSync(tmp, json, 'utf8');
+    fs.renameSync(tmp, target);
+  } catch (err) {
+    setBlocked(true);
+    throw err;
+  }
+  setBlocked(fs.readFileSync(target, 'utf8') !== json);
 }
+
+/** Saves the current state once to find out early whether writes persist. */
+function probe() {
+  load();
+  try {
+    save();
+  } catch {}
+  return !blocked;
+}
+
+const isBlocked = () => blocked;
+const onBlocked = (fn) => blockedListeners.push(fn);
 
 function update(fn) {
   const state = load();
@@ -101,4 +130,4 @@ function reset({ keepApplied = true } = {}) {
   return cache;
 }
 
-module.exports = { load, update, log, replace, reset, file, DEFAULTS };
+module.exports = { load, update, log, replace, reset, file, probe, isBlocked, onBlocked, DEFAULTS };

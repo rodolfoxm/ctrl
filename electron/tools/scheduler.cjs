@@ -53,12 +53,22 @@ async function create(id) {
   const res = await runPowerShell(`
 $action = ${actionExpr(t)}
 $trigger = ${triggerExpr(t)}
-$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
+$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ${t.task === 'open' ? '([TimeSpan]::Zero)' : '(New-TimeSpan -Minutes 30)'}
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Highest
-Register-ScheduledTask -TaskPath ${q(FOLDER)} -TaskName ${q(t.id)} -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description ${q(t.description)} -Force | Out-Null`);
-  if (!res.ok) throw new Error(/denied|negado/i.test(res.stderr) ? 'Precisa de administrador para criar tarefas agendadas.' : res.stderr);
+Register-ScheduledTask -TaskPath ${q(FOLDER)} -TaskName ${q(t.id)} -Action $action -Trigger $trigger -Settings $settings -Principal $principal -Description ${q(t.description)} -Force | Out-Null
+# An antivirus can swallow the registration without an error; only a task that really exists counts.
+if (-not (Get-ScheduledTask -TaskPath ${q(FOLDER)} -TaskName ${q(t.id)} -ErrorAction SilentlyContinue)) { throw 'BLOCKED' }`);
+  if (!res.ok) {
+    if (/BLOCKED/.test(res.stderr)) throw new Error('O Windows não criou a tarefa. Um antivírus provavelmente está restringindo o ctrl: adicione C:\\Program Files\\ctrl\\ctrl.exe aos aplicativos confiáveis dele e tente de novo.');
+    throw new Error(/denied|negado/i.test(res.stderr) ? 'Precisa de administrador para criar tarefas agendadas.' : res.stderr);
+  }
   store.log({ action: 'apply', id: `task:${t.id}`, name: `Tarefa agendada: ${t.name}`, ok: true });
   return { ok: true };
+}
+
+async function exists(id) {
+  const res = await runPowerShell(`if (Get-ScheduledTask -TaskPath ${q(FOLDER)} -TaskName ${q(id)} -ErrorAction SilentlyContinue) { 'yes' } else { 'no' }`);
+  return res.ok ? res.stdout.trim() === 'yes' : null;
 }
 
 async function remove(id) {
@@ -74,4 +84,4 @@ async function runNow(id) {
   return { ok: true };
 }
 
-module.exports = { TEMPLATES, list, create, remove, runNow };
+module.exports = { TEMPLATES, list, create, exists, remove, runNow };

@@ -68,6 +68,8 @@ undo it. ctrl works the other way around:
 
 **Requirements:** Windows 10 or 11, 64-bit.
 
+> Using Kaspersky, Avast or another antivirus that restricts unsigned programs? If ctrl warns that it cannot save, add `C:\Program Files\ctrl\ctrl.exe` to the antivirus trusted applications.
+
 ### Updates
 
 When a new version is out, ctrl shows a notice in the sidebar with a **Download update** button. Install it

@@ -537,3 +537,5 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 
 /* Read by screen readers, not shown (pages whose visual title is a logo). */
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.save-blocked { margin: 16px 24px 0; }

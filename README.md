@@ -66,6 +66,8 @@ sempre conseguem desfazer. O ctrl foi feito ao contrário:
 
 **Requisitos:** Windows 10 ou 11, 64 bits.
 
+> Usa Kaspersky, Avast ou outro antivírus que restringe programas sem assinatura? Se o ctrl avisar que não consegue salvar, adicione `C:\Program Files\ctrl\ctrl.exe` aos aplicativos confiáveis do antivírus.
+
 ### Atualizações
 
 Quando sai uma versão nova, o ctrl mostra um aviso na barra lateral com o botão **Baixar atualização**.

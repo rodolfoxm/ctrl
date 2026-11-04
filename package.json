@@ -1,7 +1,7 @@
 {
   "name": "ctrl",
   "productName": "ctrl",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Otimizador de Windows que guarda o valor original de cada ajuste, verifica se o Windows desfez algo e desfaz qualquer alteração.",
   "main": "electron/main.cjs",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -72,6 +72,7 @@
       "uninstallDisplayName": "ctrl",
       "artifactName": "ctrl-Setup-${version}.${ext}",
       "license": "build/terms.txt",
+      "include": "build/installer.nsh",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",

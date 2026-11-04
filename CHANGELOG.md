@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.2 — 04/11/2026
+
+- **Instalador:** nova etapa "Iniciar o ctrl com o Windows", já marcada. Cria a inicialização durante a instalação, quando você acabou de autorizar como administrador. Desinstalar remove as tarefas do ctrl (atualizar não).
+- **Antivírus que bloqueia em silêncio:** alguns antivírus (o Kaspersky, por exemplo) restringem programas sem assinatura paga e descartam o que eles gravam, sem erro. Agora o ctrl confere cada gravação e, se ela não ficou, mostra um aviso no topo dizendo qual antivírus está bloqueando e como liberar.
+- "Iniciar com o Windows" confere se a tarefa foi criada de verdade. Se o antivírus barrar, o botão volta para desligado e explica o motivo, em vez de ficar ligado sem funcionar. O botão também passa a refletir a tarefa real ao abrir o app.
+- Corrigido: a tarefa de inicialização tinha limite de 30 minutos, e o Windows podia encerrar o ctrl aberto pela inicialização depois desse tempo.
+
 ## 1.2.1 — 03/11/2026
 
 - Corrigido: aplicar um perfil (ou a otimização recomendada) de novo pedia para reiniciar o PC mesmo sem mudar nada. Agora o ctrl confere antes e só aplica o que ainda não está valendo; o que já estava fica como está e não pede reinício.

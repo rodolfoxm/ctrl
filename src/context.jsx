@@ -58,6 +58,8 @@ export function AppProvider({ children }) {
     checkUpdate();
   }, [checkUpdate]);
 
+  // The main process found that saves don't reach the disk (an antivirus restricting the app).
+  useEffect(() => on('app:health', (h) => setInfo((i) => ({ ...i, ...h }))), []);
   useEffect(() => on('tweaks:progress', (p) => setProgress((cur) => (cur ? { ...cur, ...p } : cur))), []);
 
   const tweakById = useMemo(() => new Map((catalog?.tweaks || []).map((t) => [t.id, t])), [catalog]);

@@ -5,6 +5,7 @@ const os = require('os');
 const { spawn } = require('child_process');
 
 const store = require('./store.cjs');
+const { runJson } = require('./ps.cjs');
 const engine = require('./engine.cjs');
 const catalog = require('./catalog/index.cjs');
 const machine = require('./machine.cjs');
@@ -189,7 +190,16 @@ const tweaksFor = (ids) => ids.map(catalog.findTweak).filter(Boolean);
 const engineOpts = (source) => ({ findTweak: catalog.findTweak, source });
 
 // ---------- App / janela ----------
+// Third-party antivirus names (Windows Security Center), to say which one is blocking the ctrl.
+async function antivirus() {
+  const names = await runJson("ConvertTo-Json -Compress -InputObject @(Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct -ErrorAction SilentlyContinue | ForEach-Object { $_.displayName })").catch(() => []);
+  return (names || []).filter((n) => !/defender/i.test(n));
+}
+store.onBlocked(async () => send('app:health', { saveBlocked: true, antivirus: await antivirus() }));
+
 handle('app:info', async () => ({
+  saveBlocked: store.isBlocked(),
+  antivirus: store.isBlocked() ? await antivirus() : [],
   version: app.getVersion(),
   isAdmin: await engine.isAdmin(),
   dataPath: app.getPath('userData'),
@@ -632,6 +642,11 @@ if (TASK) {
     quitting = true;
   });
   app.whenReady().then(() => {
+    store.probe();
+    // The switch follows the real task: created by the installer, or swallowed by an antivirus.
+    scheduler.exists('app-logon').then((on) => {
+      if (on !== null && on !== !!store.load().settings.startWithWindows) store.update((s) => { s.settings.startWithWindows = on; });
+    });
     createWindow();
     syncTray();
     startSentinel();
