@@ -1,9 +1,0 @@
-{
-  "criado_em": "2026-11-03",
-  "instrucao": "Adicione uma entrada por versão analisada. Não remova entradas antigas.",
-  "analisadas": [
-    { "ferramenta": "ISLC", "versao": "1.0.4.8", "analisado_em": "2026-11-03", "relatorio": "docs/monitor/relatorios/2026-11-03.md", "obs": "página sem changelog" },
-    { "ferramenta": "O&O ShutUp10++", "versao": "3.6.1135", "analisado_em": "2026-11-03", "relatorio": "docs/monitor/relatorios/2026-11-03.md", "obs": "página sem changelog" },
-    { "ferramenta": "Windows 11 Release Health", "versao": "26H2 (status 2026-10-28, KB5127936)", "analisado_em": "2026-11-03", "relatorio": "docs/monitor/relatorios/2026-11-03.md" }
-  ]
-}

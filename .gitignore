@@ -12,3 +12,6 @@ graphify-out/
 
 # source of src/assets/intro.mp4
 /intro programa.mp4
+
+# notas e relatórios locais do monitor de atualizações (tarefa agendada do Claude Code)
+/docs/monitor/
