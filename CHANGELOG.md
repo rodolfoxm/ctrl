@@ -1,5 +1,10 @@
 # Changelog
 
+## Próxima versão
+
+- **Primeira configuração guiada.** Na primeira abertura, o ctrl pergunta o que você joga, confere se Process Lasso, ParkControl ou ISLC estão abertos, escolhe a rede de segurança e mostra tudo antes de aplicar: a configuração do Core e os ajustes essenciais.
+- **Verificar e reparar na Visão geral.** Quando o Windows desfaz um ajuste, o alerta agora traz um botão que confere de novo e reaplica ali mesmo, e outro que leva para a Verificação.
+
 ## 1.3.1 — 04/11/2026
 
 - **Cor nova e do seu jeito.** O destaque do ctrl agora é verde-limão (#C8FF00), e dá para trocar em Configurações → Aparência: rosa, laranja, lilás, ciano, branco ou qualquer outra cor.

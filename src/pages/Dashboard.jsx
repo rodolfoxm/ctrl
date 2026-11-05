@@ -1,13 +1,13 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Zap, Cpu, MemoryStick, MonitorCog, Wifi, HardDrive, ChevronRight, ArrowRight, CheckCircle2, AlertTriangle, XCircle, Undo2, BadgeCheck,
-  ShieldCheck, Layers,
+  ShieldCheck, Layers, Wrench,
 } from 'lucide-react';
 import { call } from '../lib/api.js';
 import { useApp } from '../context.jsx';
 import { ago, rate, bytes, when } from '../lib/format.js';
 import { Page } from '../components/Page.jsx';
-import { Card, Meter, Badge, Loading, useAsync, Sparkline } from '../components/ui.jsx';
+import { Card, Meter, Badge, Loading, useAsync, Sparkline, ActionButton } from '../components/ui.jsx';
 import { useLiveStats } from '../views/MonitorView.jsx';
 import { modulePath } from '../nav.js';
 
@@ -77,15 +77,17 @@ function LiveRow({ volume }) {
 function headline(s, missing) {
   const drifted = s.lastSweep?.drifted.length || 0;
   if (!s.appliedCount) return { title: 'Vamos otimizar seu Windows.', line: 'Comece pela otimização recomendada: segura e reversível.', warn: true };
-  if (drifted) return { title: `O Windows desfez ${drifted} ajuste${drifted > 1 ? 's' : ''}.`, line: 'Abra a Verificação para reaplicar com um clique.', warn: true };
+  if (drifted) return { title: `O Windows desfez ${drifted} ajuste${drifted > 1 ? 's' : ''}.`, line: 'Dá para conferir e reaplicar daqui mesmo.', warn: true, drifted: true };
   if (missing) return { title: 'Seu sistema pode render mais.', line: `${missing} ajuste${missing > 1 ? 's' : ''} essencia${missing > 1 ? 'is' : 'l'} ainda não aplicado${missing > 1 ? 's' : ''}.`, warn: true };
   return { title: 'Seu sistema está protegido.', line: 'O Windows está otimizado, estável e pronto para uso.' };
 }
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { tweakById, applyMany, info } = useApp();
-  const sum = useAsync(() => call('dashboard:summary'), []);
+  const { key } = useLocation();
+  const { tweakById, applyMany, runBatch, toast, info } = useApp();
+  // Keyed on the navigation, so returning here after the first-run setup shows the new score.
+  const sum = useAsync(() => call('dashboard:summary'), [key]);
   const machine = useAsync(() => call('machine:get'), []);
   const hw = useAsync(() => call('hw:static'), []);
   const s = sum.data;
@@ -98,6 +100,18 @@ export default function Dashboard() {
   const optimize = async () => {
     const res = await applyMany(runnable, { title: 'Otimização recomendada', source: 'otimização recomendada' });
     if (res) sum.reload();
+  };
+
+  // The alert comes from the last sweep, so re-read first: only what is still undone gets re-applied.
+  const verifyAndRepair = async () => {
+    const res = await call('guardian:verify');
+    if (res?.ok === false) return toast(res.error, { tone: 'error' });
+    const drifted = res.items.filter((i) => i.state === 'drifted').map((i) => i.id);
+    if (drifted.length) {
+      await runBatch('Reaplicando tweaks desfeitos', 'guardian:repair', drifted);
+      await call('guardian:verify');
+    } else toast('Conferido: nada está desfeito.', { tone: 'success' });
+    sum.reload();
   };
 
   if (sum.loading && !s) return <Page title="Visão geral"><Loading label="Calculando a saúde do sistema…" /></Page>;
@@ -115,6 +129,12 @@ export default function Dashboard() {
       <div className={`status-line ${head.warn ? 'warn' : ''}`}>
         {head.warn ? <AlertTriangle size={20} /> : <CheckCircle2 size={20} />} {head.line}
       </div>
+      {head.drifted && (
+        <div className="row" style={{ marginTop: 12 }}>
+          <ActionButton className="btn btn-sm btn-primary" icon={Wrench} onClick={verifyAndRepair}>Verificar e reparar</ActionButton>
+          <button className="btn btn-sm btn-ghost" onClick={() => navigate('/guardian')}>Ver detalhes <ArrowRight /></button>
+        </div>
+      )}
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.6fr)', marginTop: 28 }}>
         <Card>

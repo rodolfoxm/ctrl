@@ -492,7 +492,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tabs-inline { display: inline-flex; gap: 2px; padding: 3px; border-radius: var(--r-md); background: var(--surface-0); }
 .tabs-inline button { height: 28px; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--text-3); font-size: 12.5px; font-weight: 600; }
 .tabs-inline button.active { background: var(--surface-3); color: var(--text-1); }
-.onboarding { width: min(680px, calc(100vw - 40px)); padding: 0; overflow: hidden; }
+.onboarding { width: min(680px, calc(100vw - 40px)); padding: 0; overflow: hidden auto; }
 .onboarding-art { height: 170px; display: grid; place-items: center; background: #000; }
 .onboarding-art .wordmark { font-size: 64px; }
 .onboarding-body { padding: 24px 28px; }

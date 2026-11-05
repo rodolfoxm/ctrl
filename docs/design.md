@@ -48,6 +48,10 @@ brigariam com ele. Em Sobre, o cartão "Apoiar o desenvolvimento" abre o site; n
 - Ajustes "avançados" ou com ressalva pedem confirmação antes de aplicar.
 - `prefers-reduced-motion` desliga animações e transições, incluindo o cursor do logo.
 
+## Primeira abertura
+
+`Onboarding.jsx` faz a primeira configuração: boas-vindas, PC detectado, jogos, programas em conflito (só se marcou jogos), rede de segurança e revisão. Nada muda no PC antes do botão da revisão. Com Process Lasso, ParkControl ou ISLC abertos, as regras do Core são salvas e o Core fica desligado. Só aparece enquanto `onboarded` é falso.
+
 ## Estados
 
 Carregando (spinner/`Loading`), vazio (`Empty`), erro (toast e `ErrorBoundary` por tela), "sem leitura" para ajustes cujo estado não pode

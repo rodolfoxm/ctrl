@@ -17,11 +17,38 @@ const TABS = [
   { id: 'activity', label: 'Atividade', icon: Activity },
 ];
 
+/** Game chips and the E-core choice, shared by the Core wizard and the first-run walkthrough. */
+export function GamePicker({ st, games, setGames, background, setBackground }) {
+  const toggle = (id) => setGames((g) => (g.includes(id) ? g.filter((x) => x !== id) : [...g, id]));
+  return (
+    <>
+      <div className="wizard-games">
+        {st.games.map((g) => (
+          <button key={g.id} type="button" className={`wizard-game ${games.includes(g.id) ? 'on' : ''}`} aria-pressed={games.includes(g.id)} onClick={() => toggle(g.id)}>
+            <Gamepad2 size={16} /> {g.name}
+          </button>
+        ))}
+      </div>
+      {st.hybrid && (
+        <label className="row" style={{ marginTop: 14, gap: 10 }}>
+          <input type="checkbox" checked={background} onChange={(e) => setBackground(e.target.checked)} />
+          <span>Mandar Discord, Spotify, RGB e afins para os E-cores</span>
+        </label>
+      )}
+    </>
+  );
+}
+
+/** Turns a suggested plan into a Core config patch, keeping rules made for other programs. */
+export function planPatch(plan, rules) {
+  const keep = rules.filter((r) => !plan.rules.some((n) => n.exe.toLowerCase() === r.exe.toLowerCase()));
+  return { rules: [...plan.rules, ...keep], memory: plan.memory, boost: plan.boost, profile: plan.profile, enabled: true };
+}
+
 function Wizard({ st, onClose, onDone }) {
   const [games, setGames] = useState(st.config.profile.games || []);
   const [background, setBackground] = useState(true);
   const [plan, setPlan] = useState(null);
-  const toggle = (id) => setGames((g) => (g.includes(id) ? g.filter((x) => x !== id) : [...g, id]));
   return (
     <div className="backdrop" onClick={onClose}>
       <div className="modal batuta-wizard" role="dialog" aria-modal="true" aria-labelledby="wizard-title" onClick={(e) => e.stopPropagation()}>
@@ -29,19 +56,7 @@ function Wizard({ st, onClose, onDone }) {
           <>
             <h3 id="wizard-title">O que você joga?</h3>
             <p>Marque todos. A configuração muda conforme o jogo: CS2 pede uma coisa, Warzone pede outra, e quem joga os dois recebe o melhor dos dois.</p>
-            <div className="wizard-games">
-              {st.games.map((g) => (
-                <button key={g.id} type="button" className={`wizard-game ${games.includes(g.id) ? 'on' : ''}`} aria-pressed={games.includes(g.id)} onClick={() => toggle(g.id)}>
-                  <Gamepad2 size={16} /> {g.name}
-                </button>
-              ))}
-            </div>
-            {st.hybrid && (
-              <label className="row" style={{ marginTop: 14, gap: 10 }}>
-                <input type="checkbox" checked={background} onChange={(e) => setBackground(e.target.checked)} />
-                <span>Mandar Discord, Spotify, RGB e afins para os E-cores</span>
-              </label>
-            )}
+            <GamePicker st={st} games={games} setGames={setGames} background={background} setBackground={setBackground} />
             <div className="modal-actions">
               <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
               <ActionButton className="btn btn-primary" disabled={!games.length} onClick={async () => setPlan(await call('batuta:suggest', games, { background }))}>Ver a configuração</ActionButton>
@@ -55,8 +70,7 @@ function Wizard({ st, onClose, onDone }) {
             <div className="modal-actions">
               <button className="btn btn-ghost" onClick={() => setPlan(null)}>Voltar</button>
               <ActionButton className="btn btn-primary" icon={Check} onClick={async () => {
-                const keep = st.config.rules.filter((r) => !plan.rules.some((n) => n.exe.toLowerCase() === r.exe.toLowerCase()));
-                await onDone({ rules: [...plan.rules, ...keep], memory: plan.memory, boost: plan.boost, profile: plan.profile, enabled: true });
+                await onDone(planPatch(plan, st.config.rules));
               }}>Aplicar e ligar o Core</ActionButton>
             </div>
           </>
