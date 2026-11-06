@@ -7,6 +7,7 @@ import { applyStoredAccent } from './lib/accent.js';
 import { AppProvider, useApp } from './context.jsx';
 import Shell from './components/Shell.jsx';
 import Onboarding from './components/Onboarding.jsx';
+import Tour from './components/Tour.jsx';
 import Intro from './components/Intro.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Guide from './pages/Guide.jsx';
@@ -67,6 +68,7 @@ function Root() {
         </Routes>
       </ErrorBoundary>
       {settings && !onboarded && <Onboarding />}
+      <Tour />
       <Intro />
     </Shell>
   );

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Undo2, Zap, EyeOff, Radar, Keyboard, HelpCircle } from 'lucide-react';
+import { ShieldCheck, Undo2, Zap, EyeOff, Radar, Keyboard, HelpCircle, Compass } from 'lucide-react';
+import { useApp } from '../context.jsx';
 import { Page, Hero } from '../components/Page.jsx';
 import { Card } from '../components/ui.jsx';
 
@@ -21,9 +22,10 @@ const FAQ = [
 ];
 
 export default function Guide() {
+  const { setTour } = useApp();
   return (
     <Page title="Guia">
-      <Hero title="Como usar o ctrl com segurança">
+      <Hero title="Como usar o ctrl com segurança" actions={<button className="btn btn-sm" onClick={() => setTour(true)}><Compass /> Ver o tutorial</button>}>
         Tudo que o app faz é reversível e fica registrado. Cinco passos para começar e as respostas para as dúvidas mais comuns.
       </Hero>
       <div className="grid grid-2" style={{ alignItems: 'start' }}>

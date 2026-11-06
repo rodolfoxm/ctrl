@@ -8,7 +8,7 @@ const store = require('./store.cjs');
 
 const REPO = 'rodolfoxm/ctrl';
 const RELEASES = `https://github.com/${REPO}/releases`;
-const CACHE_MS = 6 * 36e5;
+const CACHE_MS = 36e5;
 
 let cached = null; // { at, result }
 

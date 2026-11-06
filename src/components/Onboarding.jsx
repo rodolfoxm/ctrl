@@ -8,7 +8,7 @@ import { Wordmark, Spinner, Switch, ActionButton } from './ui.jsx';
 
 /** First-run setup: welcome → machine → games → conflicting tools → safety → review and apply. */
 export default function Onboarding() {
-  const { setOnboarded, settings, updateSettings, info, tweakById, applyMany, toast } = useApp();
+  const { setOnboarded, settings, updateSettings, info, tweakById, applyMany, toast, setTour } = useApp();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [machine, setMachine] = useState(null);
@@ -60,6 +60,7 @@ export default function Onboarding() {
     }
     if (appliesEssentials) await applyMany(essentials, { title: 'Otimização recomendada', source: 'primeira configuração' });
     navigate('/');
+    setTour(true);
   };
 
   return (

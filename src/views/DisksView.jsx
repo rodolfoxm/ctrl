@@ -25,7 +25,7 @@ export default function DisksView() {
       )}
       {(disks.data || []).map((d) => {
         const [tone, label] = HEALTH[d.health] || ['', d.health || 'Desconhecido'];
-        const lifeLeft = d.wear != null ? 100 - d.wear : null;
+        const lifeLeft = d.wear != null ? Math.max(0, 100 - d.wear) : null;
         return (
           <Card
             key={d.serial || d.name}
@@ -35,10 +35,10 @@ export default function DisksView() {
             end={<Badge tone={tone}>{label}</Badge>}
           >
             <div className="grid grid-4">
-              <Stat label="Temperatura" value={d.temperature ?? '—'} unit={d.temperature != null ? '°C' : ''} color={tempTone(d.temperature)} sub={d.temperatureMax ? `máx. registrada ${d.temperatureMax} °C` : ''} />
-              <Stat label="Vida útil restante" value={lifeLeft != null ? lifeLeft : '—'} unit={lifeLeft != null ? '%' : ''} color={lifeLeft != null && lifeLeft < 20 ? 'var(--danger)' : undefined} sub={d.media === 'HDD' ? 'Não se aplica a HDs' : ''} />
+              <Stat label="Temperatura" value={d.temperature ?? '—'} unit={d.temperature != null ? '°C' : ''} color={tempTone(d.temperature)} />
+              <Stat label="Vida útil restante" value={lifeLeft != null ? lifeLeft : '—'} unit={lifeLeft != null ? '%' : ''} color={lifeLeft != null && lifeLeft < 20 ? 'var(--danger)' : undefined} sub={d.media === 'HDD' ? 'Não se aplica a HDs' : lifeLeft == null ? 'Não informada pelo disco' : ''} />
               <Stat label="Horas ligado" value={d.powerOnHours != null ? d.powerOnHours.toLocaleString('pt-BR') : '—'} sub={d.powerOnHours ? `≈ ${(d.powerOnHours / 24 / 365).toFixed(1)} anos` : ''} />
-              <Stat label="Erros de leitura/escrita" value={d.readErrors != null ? `${d.readErrors}/${d.writeErrors}` : '—'} color={(d.readErrors || d.writeErrors) ? 'var(--warning)' : undefined} sub={d.startStop ? `${d.startStop.toLocaleString('pt-BR')} ciclos liga/desliga` : ''} />
+              <Stat label="Erros de mídia" value={d.mediaErrors ?? '—'} color={d.mediaErrors ? 'var(--warning)' : undefined} sub={d.startStop ? `${d.startStop.toLocaleString('pt-BR')} ciclos liga/desliga` : ''} />
             </div>
             {lifeLeft != null && <div style={{ marginTop: 12 }}><Meter value={lifeLeft} color={lifeLeft < 20 ? 'var(--danger)' : 'var(--success)'} /></div>}
             {!d.countersAvailable && <div className="small dim" style={{ marginTop: 10 }}><Thermometer size={13} /> O controlador deste disco não expõe contadores de confiabilidade ao Windows.</div>}

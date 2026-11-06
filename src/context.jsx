@@ -26,6 +26,7 @@ export function AppProvider({ children }) {
   const [pendingRestart, setPendingRestart] = useState('none');
   const [update, setUpdate] = useState(null);
   const [updateOpen, setUpdateOpen] = useState(false);
+  const [tour, setTour] = useState(false);
   const restorePointDone = useRef(false);
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export function AppProvider({ children }) {
     refreshStatus();
   }, [refreshState, refreshStatus]);
 
-  // Release check on GitHub, once per launch (the main process caches it and honours the setting).
+  // Release check on GitHub (the main process caches it and honours the setting).
   const checkUpdate = useCallback(async (force) => {
     const res = await call('app:checkUpdate', !!force);
     if (res && res.ok !== false) {
@@ -69,9 +70,9 @@ export function AppProvider({ children }) {
     }
     return res;
   }, []);
-  useEffect(() => {
-    checkUpdate();
-  }, [checkUpdate]);
+  // Repeats because the app can stay in the tray for days and the network may be down at logon: failures aren't cached.
+  useEffect(() => void checkUpdate(), [checkUpdate]);
+  useEffect(() => { const timer = setInterval(() => checkUpdate(), 30 * 60e3); return () => clearInterval(timer); }, [checkUpdate]);
 
   // The main process found that saves don't reach the disk (an antivirus restricting the app).
   useEffect(() => on('app:health', (h) => setInfo((i) => ({ ...i, ...h }))), []);
@@ -264,7 +265,7 @@ export function AppProvider({ children }) {
   const value = {
     info, catalog, tweakById, status, statusLoading, applied, settings, onboarded, setOnboarded, busy, pendingRestart,
     setPendingRestart, toast, confirm, updateSettings, toggleTweak, applyMany, revertMany, runBatch, refreshStatus,
-    refreshState, ensureRestorePoint, noteRestart, blockIfNotAdmin, update, checkUpdate, updateOpen, setUpdateOpen,
+    refreshState, ensureRestorePoint, noteRestart, blockIfNotAdmin, update, checkUpdate, updateOpen, setUpdateOpen, tour, setTour,
   };
 
   return (

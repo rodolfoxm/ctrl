@@ -52,6 +52,8 @@ brigariam com ele. Em Sobre, o cartão "Apoiar o desenvolvimento" abre o site; n
 
 `Onboarding.jsx` faz a primeira configuração: boas-vindas, PC detectado, jogos, programas em conflito (só se marcou jogos), rede de segurança e revisão. Nada muda no PC antes do botão da revisão. Com Process Lasso, ParkControl ou ISLC abertos, as regras do Core são salvas e o Core fica desligado. Só aparece enquanto `onboarded` é falso.
 
+Depois dela, `Tour.jsx` passa por cada item da barra lateral, sem bloquear a tela, com "Próximo" e "Pular tutorial" (Esc também pula). Não é salvo: quem só atualiza não vê, e o botão "Ver o tutorial" no Guia abre de novo.
+
 ## Estados
 
 Carregando (spinner/`Loading`), vazio (`Empty`), erro (toast e `ErrorBoundary` por tela), "sem leitura" para ajustes cujo estado não pode

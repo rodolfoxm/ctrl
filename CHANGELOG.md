@@ -1,5 +1,11 @@
 # Changelog
 
+## Próxima versão
+
+- **Saúde dos discos corrigida.** O Windows dizia 100% de vida útil e não mostrava as horas em muitos SSDs NVMe, e o ctrl mostrava vida útil até em HDs. Agora a leitura vem direto do disco: vida útil real, horas ligado, erros de mídia e ciclos. A "máx. registrada" saiu, porque era o limite do disco, não uma medição.
+- **Aviso de versão nova mais confiável.** Antes o ctrl só procurava ao abrir: quem deixa na bandeja não via a versão nova, e sem internet ao ligar o PC a busca falhava sem tentar de novo. Agora ele procura a cada 30 minutos enquanto estiver aberto.
+- **Tutorial.** Depois da primeira configuração, um tour passa por todas as partes do ctrl, com "Próximo" e "Pular tutorial". Dá para rever em Guia → Ver o tutorial.
+
 ## 1.4.0 — 05/11/2026
 
 - **Primeira configuração guiada.** Na primeira abertura, o ctrl pergunta o que você joga, confere se Process Lasso, ParkControl ou ISLC estão abertos, escolhe a rede de segurança e mostra tudo antes de aplicar: a configuração do Core e os ajustes essenciais.

@@ -78,7 +78,7 @@ function Sidebar({ collapsed, onToggle }) {
   const link = (item, small) => {
     const Icon = item.icon;
     return (
-      <NavLink key={item.id} to={item.path} className={`nav-link ${small ? 'small' : ''} ${isActive(item, pathname) ? 'active' : ''}`} title={collapsed ? item.label : undefined}>
+      <NavLink key={item.id} to={item.path} data-tour={item.id} className={`nav-link ${small ? 'small' : ''} ${isActive(item, pathname) ? 'active' : ''}`} title={collapsed ? item.label : undefined}>
         <Icon />
         <span>{item.label}</span>
         {item.id === 'verify' && count > 0 && !collapsed && <span className="badge badge-dot">{count}</span>}

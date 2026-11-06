@@ -320,8 +320,8 @@ const handlers = {
     { name: 'explorer', id: 3234, mem: 2.2e8, cpu: 40.1 }, { name: 'steamwebhelper', id: 4234, mem: 1.9e8, cpu: 22.7 },
   ],
   'health:disks': async () => (await wait(500), [
-    { name: 'Samsung SSD 990 PRO 2TB', serial: 'S6Z2NJ0W123456', media: 'SSD', bus: 'NVMe', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '4B2QJXD7', temperature: 41, temperatureMax: 82, wear: 3, powerOnHours: 5821, readErrors: 0, writeErrors: 0, startStop: 812, countersAvailable: true },
-    { name: 'ST2000DM008-2FR102', serial: 'ZFL1ABCD', media: 'HDD', bus: 'SATA', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '0001', temperature: 34, temperatureMax: 50, wear: null, powerOnHours: 14210, readErrors: 0, writeErrors: 0, startStop: 2210, countersAvailable: true },
+    { name: 'Samsung SSD 990 PRO 2TB', serial: 'S6Z2NJ0W123456', media: 'SSD', bus: 'NVMe', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '4B2QJXD7', temperature: 41, wear: 3, powerOnHours: 5821, mediaErrors: 0, startStop: 812, countersAvailable: true },
+    { name: 'ST2000DM008-2FR102', serial: 'ZFL1ABCD', media: 'HDD', bus: 'SATA', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '0001', temperature: 34, wear: null, powerOnHours: 14210, mediaErrors: 0, startStop: 2210, countersAvailable: true },
   ]),
   'health:battery': async () => ({ present: false }),
   'health:boot': async () => (await wait(400), {
