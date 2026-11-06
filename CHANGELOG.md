@@ -1,6 +1,6 @@
 # Changelog
 
-## Próxima versão
+## 1.4.1 — 05/11/2026
 
 - **Saúde dos discos corrigida.** O Windows dizia 100% de vida útil e não mostrava as horas em muitos SSDs NVMe, e o ctrl mostrava vida útil até em HDs. Agora a leitura vem direto do disco: vida útil real, horas ligado, erros de mídia e ciclos. A "máx. registrada" saiu, porque era o limite do disco, não uma medição.
 - **Aviso de versão nova mais confiável.** Antes o ctrl só procurava ao abrir: quem deixa na bandeja não via a versão nova, e sem internet ao ligar o PC a busca falhava sem tentar de novo. Agora ele procura a cada 30 minutos enquanto estiver aberto.

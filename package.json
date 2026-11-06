@@ -1,7 +1,7 @@
 {
   "name": "ctrl",
   "productName": "ctrl",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Otimizador de Windows que guarda o valor original de cada ajuste, verifica se o Windows desfez algo e desfaz qualquer alteração.",
   "main": "electron/main.cjs",
   "license": "SEE LICENSE IN LICENSE.md",
