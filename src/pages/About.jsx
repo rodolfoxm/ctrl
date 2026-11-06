@@ -95,7 +95,7 @@ export default function About() {
               Distribuído sob a <strong>PolyForm Noncommercial License 1.0.0</strong>. Uso pessoal, estudo, pesquisa e uso por organizações sem
               fins lucrativos são livres. Vender, revender ou usar comercialmente não é permitido sem autorização do autor.
             </p>
-            <p style={{ marginBottom: 14 }}>Copyright © 2026 rodolfoxm.</p>
+            <p style={{ marginBottom: 14 }}>Copyright © 2026 rodolfoxm. A avaliação de saúde dos discos segue as regras do CrystalDiskInfo (licença MIT).</p>
           </div>
           <div className="row wrap">
             <button className="btn btn-sm" onClick={() => call('app:openRepo')}><Github /> Código no GitHub</button>

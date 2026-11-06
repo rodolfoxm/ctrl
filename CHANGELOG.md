@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0 — 05/11/2026
+
+- **Saúde dos discos com as regras do CrystalDiskInfo.** O ctrl agora lê os limites definidos pelo fabricante e avalia cada disco do mesmo jeito: Saudável, Atenção, Com problemas ou Desconhecido. Cada disco ganhou "Todos os atributos", com atual, pior, limite e valor bruto. A vida útil de SSDs SATA cobre mais marcas.
+
 ## 1.4.1 — 05/11/2026
 
 - **Saúde dos discos corrigida.** O Windows dizia 100% de vida útil e não mostrava as horas em muitos SSDs NVMe, e o ctrl mostrava vida útil até em HDs. Agora a leitura vem direto do disco: vida útil real, horas ligado, erros de mídia e ciclos. A "máx. registrada" saiu, porque era o limite do disco, não uma medição.

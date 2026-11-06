@@ -1,9 +1,10 @@
 // Hardware health: disk reliability counters, battery wear and boot time history.
 const { runJson } = require('../ps.cjs');
+const { summarize } = require('./disk-status.cjs');
 
 // Windows' reliability counters aren't enough: on many NVMe drives they report Wear 0 and no hours, on
-// HDDs Wear is meaningless, and TemperatureMax is the drive's limit, not a recorded maximum. So wear,
-// hours and media errors come from the drive itself: the NVMe health log or the ATA SMART attributes.
+// HDDs Wear is meaningless, and TemperatureMax is the drive's limit, not a recorded maximum. So the reading
+// comes from the drive itself: the NVMe health log or the ATA SMART attributes and thresholds (see disk-status.cjs).
 const NVME_LOG = String.raw`
 using System;
 using System.Runtime.InteropServices;
@@ -33,26 +34,32 @@ public static class CtrlNvme {
   }
 }`;
 
-// Normalized "life left" attributes, in the order vendors use them: WD/SanDisk, Kingston and others, Intel, Samsung, Crucial.
-const LIFE_ATTRS = [169, 231, 233, 177, 202];
-
 const DISKS_SCRIPT = String.raw`
 Add-Type -TypeDefinition @'
 ${NVME_LOG}
 '@
 # ATA SMART by disk number. WMI only names the device, so Win32_DiskDrive links it to the disk.
-$smart = @{}; $predict = @{}
+$smart = @{}; $limits = @{}; $predict = @{}
 try {
   $index = @{}
   foreach ($w in @(Get-CimInstance Win32_DiskDrive)) { if ($w.PNPDeviceID) { $index[([string]$w.PNPDeviceID).ToUpper() + '_0'] = [string]$w.Index } }
   foreach ($p in @(Get-CimInstance -Namespace root\wmi -ClassName MSStorageDriver_FailurePredictStatus -ErrorAction Stop)) {
     $n = $index[([string]$p.InstanceName).ToUpper()]; if ($n) { $predict[$n] = [bool]$p.PredictFailure }
   }
+  foreach ($t in @(Get-CimInstance -Namespace root\wmi -ClassName MSStorageDriver_FailurePredictThresholds -ErrorAction Stop)) {
+    $n = $index[([string]$t.InstanceName).ToUpper()]; if (-not $n) { continue }
+    $v = [byte[]]$t.VendorSpecific; $h = @{}
+    for ($i = 2; $i -lt 362; $i += 12) { if ($v[$i] -ne 0) { $h[[int]$v[$i]] = [int]$v[$i + 1] } }
+    $limits[$n] = $h
+  }
   foreach ($s in @(Get-CimInstance -Namespace root\wmi -ClassName MSStorageDriver_ATAPISmartData -ErrorAction Stop)) {
     $n = $index[([string]$s.InstanceName).ToUpper()]; if (-not $n) { continue }
-    $v = [byte[]]$s.VendorSpecific; $attrs = @{}
+    $v = [byte[]]$s.VendorSpecific; $attrs = @()
     for ($i = 2; $i -lt 362; $i += 12) {
-      if ($v[$i] -ne 0) { $attrs[[int]$v[$i]] = @{ cur = [int]$v[$i + 3]; raw = [int][BitConverter]::ToUInt16($v, $i + 5) } }
+      if ($v[$i] -eq 0) { continue }
+      $raw = [uint64]0; for ($k = 10; $k -ge 5; $k--) { $raw = $raw * 256 + $v[$i + $k] }
+      $thr = 0; if ($limits[$n] -and $limits[$n].ContainsKey([int]$v[$i])) { $thr = $limits[$n][[int]$v[$i]] }
+      $attrs += [pscustomobject]@{ id = [int]$v[$i]; cur = [int]$v[$i + 3]; worst = [int]$v[$i + 4]; thr = $thr; raw = $raw }
     }
     $smart[$n] = $attrs
   }
@@ -61,49 +68,33 @@ try {
 $out = @()
 foreach ($d in @(Get-PhysicalDisk -ErrorAction SilentlyContinue)) {
   $rc = $null; try { $rc = $d | Get-StorageReliabilityCounter -ErrorAction Stop } catch {}
-  $id = [string]$d.DeviceId; $hdd = [string]$d.MediaType -eq 'HDD'
-  $temp = if ($rc -and $rc.Temperature) { [int]$rc.Temperature } else { $null }
-  $hours = if ($rc -and $rc.PowerOnHours) { [int64]$rc.PowerOnHours } else { $null }
-  $cycles = if ($rc -and $rc.StartStopCycleCount) { [int64]$rc.StartStopCycleCount } else { $null }
-  $wear = $null; $mediaErrors = $null; $warn = $false; $log = $null
-
+  $id = [string]$d.DeviceId; $nvme = $null; $log = $null
   if ([string]$d.BusType -eq 'NVMe') {
     try { $log = [CtrlNvme]::HealthLog([int]$id) } catch {}
     if ($log -and [BitConverter]::ToUInt16($log, 1) -gt 0) {
-      $temp = [BitConverter]::ToUInt16($log, 1) - 273
-      $wear = [int]$log[5]
-      $cycles = [int64][BitConverter]::ToUInt64($log, 112)
-      $hours = [int64][BitConverter]::ToUInt64($log, 128)
-      $mediaErrors = [int64][BitConverter]::ToUInt64($log, 160)
-      $warn = $log[0] -ne 0 -or $log[3] -lt $log[4]
-    } else { $log = $null }
-  }
-  $attrs = $smart[$id]
-  if ($attrs) {
-    $mediaErrors = 0; foreach ($a in 5, 197, 198) { if ($attrs[$a]) { $mediaErrors += $attrs[$a].raw } }
-    if (-not $cycles -and $attrs[12]) { $cycles = [int64]$attrs[12].raw }
-    if (-not $hdd) { foreach ($a in ${LIFE_ATTRS.join(', ')}) { if ($attrs[$a]) { $wear = 100 - $attrs[$a].cur; break } } }
-  }
-  # Wear 0 is what Windows answers when it doesn't know, so only a real reading counts.
-  if ($null -eq $wear -and -not $hdd -and $rc -and $rc.Wear) { $wear = [int]$rc.Wear }
-
-  $health = [string]$d.HealthStatus
-  if ($health -eq 'Healthy') {
-    if ($predict[$id]) { $health = 'Unhealthy' }
-    elseif ($warn -or $mediaErrors -gt 0 -or $wear -ge 90) { $health = 'Warning' }
+      $u = { param($at) [BitConverter]::ToUInt64($log, $at) }
+      $nvme = [pscustomobject]@{
+        crit = [int]$log[0]; temp = [BitConverter]::ToUInt16($log, 1) - 273; spare = [int]$log[3]; spareThr = [int]$log[4]; used = [int]$log[5]
+        unitsRead = & $u 32; unitsWritten = & $u 48; hostReads = & $u 64; hostWrites = & $u 80; busy = & $u 96
+        cycles = & $u 112; hours = & $u 128; unsafe = & $u 144; media = & $u 160; errLog = & $u 176
+      }
+    }
   }
   $out += [pscustomobject]@{
     name = $d.FriendlyName; serial = ([string]$d.SerialNumber).Trim(); media = [string]$d.MediaType; bus = [string]$d.BusType
-    size = [int64]$d.Size; health = $health; status = [string]($d.OperationalStatus -join ', ')
-    firmware = $d.FirmwareVersion; temperature = $temp; wear = $wear; powerOnHours = $hours
-    mediaErrors = $mediaErrors; startStop = $cycles
-    countersAvailable = [bool]($rc -or $log -or $attrs)
+    size = [int64]$d.Size; windows = [string]$d.HealthStatus; status = [string]($d.OperationalStatus -join ', ')
+    firmware = $d.FirmwareVersion; counters = [bool]$rc
+    temperature = if ($rc -and $rc.Temperature) { [int]$rc.Temperature } else { $null }
+    powerOnHours = if ($rc -and $rc.PowerOnHours) { [int64]$rc.PowerOnHours } else { $null }
+    startStop = if ($rc -and $rc.StartStopCycleCount) { [int64]$rc.StartStopCycleCount } else { $null }
+    nvme = $nvme; ata = @($smart[$id]); thresholdsRead = [bool]$limits[$id]; predictFailure = [bool]$predict[$id]
   }
 }
-ConvertTo-Json -InputObject @($out) -Compress`;
+ConvertTo-Json -InputObject @($out) -Compress -Depth 5`;
 
 async function disks() {
-  return runJson(DISKS_SCRIPT, { timeout: 60000 });
+  const list = await runJson(DISKS_SCRIPT, { timeout: 60000 });
+  return (list || []).map(summarize);
 }
 
 async function battery() {

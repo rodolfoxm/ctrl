@@ -4,7 +4,34 @@ import { useApp } from '../context.jsx';
 import { bytes } from '../lib/format.js';
 import { Card, Badge, Stat, Meter, Loading, useAsync, Callout } from '../components/ui.jsx';
 
-const HEALTH = { Healthy: ['success', 'Saudável'], Warning: ['warning', 'Atenção'], Unhealthy: ['danger', 'Com problemas'] };
+const HEALTH = { Healthy: ['success', 'Saudável'], Warning: ['warning', 'Atenção'], Unhealthy: ['danger', 'Com problemas'], Unknown: ['', 'Desconhecido'] };
+
+/** Everything the drive reports: its health log on NVMe, its SMART attributes and the maker's limits on SATA. */
+function Attributes({ disk }) {
+  const count = disk.nvmeRows?.length || disk.attributes?.length;
+  if (!count) return null;
+  return (
+    <details style={{ marginTop: 12 }}>
+      <summary className="small muted">Todos os atributos ({count})</summary>
+      <table className="table small" style={{ marginTop: 8 }}>
+        {disk.nvmeRows ? (
+          <tbody>{disk.nvmeRows.map((r) => <tr key={r.name}><td>{r.name}</td><td className="num">{r.value}</td></tr>)}</tbody>
+        ) : (
+          <>
+            <thead><tr><th>ID</th><th>Atributo</th><th className="num">Atual</th><th className="num">Pior</th><th className="num">Limite</th><th className="num">Bruto</th></tr></thead>
+            <tbody>
+              {disk.attributes.map((a) => (
+                <tr key={a.id} style={a.bad ? { color: 'var(--danger)' } : undefined}>
+                  <td className="mono">{a.id}</td><td>{a.name}</td><td className="num">{a.cur}</td><td className="num">{a.worst}</td><td className="num">{a.thr}</td><td className="num mono">{a.raw}</td>
+                </tr>
+              ))}
+            </tbody>
+          </>
+        )}
+      </table>
+    </details>
+  );
+}
 
 function tempTone(t) {
   if (t == null) return undefined;
@@ -42,6 +69,7 @@ export default function DisksView() {
             </div>
             {lifeLeft != null && <div style={{ marginTop: 12 }}><Meter value={lifeLeft} color={lifeLeft < 20 ? 'var(--danger)' : 'var(--success)'} /></div>}
             {!d.countersAvailable && <div className="small dim" style={{ marginTop: 10 }}><Thermometer size={13} /> O controlador deste disco não expõe contadores de confiabilidade ao Windows.</div>}
+            <Attributes disk={d} />
           </Card>
         );
       })}
