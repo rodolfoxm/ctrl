@@ -10,7 +10,7 @@
     "web": "vite",
     "build": "vite build",
     "start": "vite build && electron .",
-    "check": "node scripts/check-catalog.cjs && node scripts/check-disk-status.cjs",
+    "check": "node scripts/check-catalog.cjs && node scripts/check-disk-status.cjs && node scripts/check-core.cjs",
     "dist": "vite build && electron-builder --win nsis",
     "lint": "eslint .",
     "verify-rules": "node scripts/verify-quality-rules.mjs",

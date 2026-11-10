@@ -27,7 +27,8 @@ electron/
   livegame.cjs      Modo ao vivo (polling de processos a cada 5 s)
   batuta.cjs        Core (nome interno batuta): worker PowerShell contínuo (regras, contenção, limpeza da lista de espera) + plano por atividade e núcleos
   batuta-worker.cjs script do worker: regras, detecção de jogos por pasta, Vigia, contenção e limpeza de memória
-  batuta-native.cjs helper C# (Add-Type) com as APIs de agendador, energia e lista de memória
+  batuta-native.cjs helper C# (Add-Type) com as APIs de agendador, energia e lista de memória; lista os processos
+                    numa chamada só e só abre processos com consulta limitada ou ajuste (nunca leitura de memória)
   batuta-presets.cjs jogos conhecidos e o assistente que monta a configuração
   hardware.cjs      especificações (CIM) e monitor ao vivo (PDH com nomes em inglês)
   backups.cjs games.cjs debloat.cjs

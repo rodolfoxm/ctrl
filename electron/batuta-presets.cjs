@@ -50,7 +50,8 @@ function suggest(gameIds, { hybrid = false, laptop = false, background = true } 
   const ram = ramGb() * 1024;
   const share = { 1: 0.25, 2: 1 / 3, 3: 0.5 }[weight] || 0.25;
   const memory = {
-    enabled: weight >= 2 || ram <= 16384,
+    // With 32 GB or more the standby list never starves a game, and each purge costs a stutter.
+    enabled: ram <= 16384 || (weight >= 3 && ram < 32768),
     onlyGaming: true,
     listMB: weight >= 3 ? 1024 : 2048,
     freeMB: Math.max(1024, Math.min(ram - 2048, Math.round((ram * share) / 256) * 256)),

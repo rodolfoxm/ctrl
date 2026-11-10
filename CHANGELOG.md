@@ -1,5 +1,11 @@
 # Changelog
 
+## Próxima versão
+
+- **Core mais leve durante os jogos.** Medido lado a lado, cada passada do Core gasta cerca de 40% menos CPU (de ~31 ms para ~19 ms). Com um jogo aberto, ele passa a olhar os processos a cada 5 segundos em vez de 2, roda com prioridade abaixo do normal e em modo de eficiência, para nunca disputar a CPU com o jogo.
+- **Core sem leitura de memória dos jogos.** Para descobrir a pasta de um jogo, o Core abria o processo com permissão de leitura de memória (é o que o PowerShell faz por baixo). Agora usa só a consulta limitada do Windows, como sempre foi a intenção. Prioridade e núcleos também passam a ser lidos e mudados com o mínimo de permissão.
+- **Limpeza de memória sem travadas no jogo.** Durante um jogo, a lista de espera é limpa no máximo uma vez a cada 5 minutos (antes podia ser a cada 10 segundos). O assistente do Core não liga mais a limpeza em PCs com 32 GB ou mais.
+
 ## 1.6.0 — 10/11/2026
 
 - **Diagnóstico da Saúde do sistema.** Clique na nota ou em "Ver diagnóstico" para ver o que tira pontos, quanto cada item pesa, o que já está em dia e o que depende de você, com o atalho para resolver.
