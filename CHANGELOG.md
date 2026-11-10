@@ -1,6 +1,6 @@
 # Changelog
 
-## Próxima versão
+## 1.6.0 — 10/11/2026
 
 - **Diagnóstico da Saúde do sistema.** Clique na nota ou em "Ver diagnóstico" para ver o que tira pontos, quanto cada item pesa, o que já está em dia e o que depende de você, com o atalho para resolver.
 - **Otimizar agora, do começo ao fim.** Mostra os ajustes que serão aplicados antes de mexer em qualquer coisa, aplica com backup, confere no sistema e mostra a nota antes e depois, lida de novo do Windows. Dá para desfazer ali mesmo, e o que falhar aparece com o motivo.
