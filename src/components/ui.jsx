@@ -70,6 +70,22 @@ export function Stat({ label, value, unit, sub, color }) {
   );
 }
 
+/** Counts up to a number once it is known (skipped when the system asks for less motion). */
+export function CountUp({ value }) {
+  const [shown, setShown] = useState(value);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return setShown(value);
+    const from = performance.now();
+    let frame = requestAnimationFrame(function tick(now) {
+      const t = Math.min(1, (now - from) / 700);
+      setShown(Math.round(value * (1 - (1 - t) ** 3)));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return shown;
+}
+
 export function Meter({ value, color }) {
   return (
     <div className="meter">

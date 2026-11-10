@@ -1,13 +1,15 @@
+import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Zap, Cpu, MemoryStick, MonitorCog, Wifi, HardDrive, ChevronRight, ArrowRight, CheckCircle2, AlertTriangle, XCircle, Undo2, BadgeCheck,
-  ShieldCheck, Layers, Wrench,
+  ShieldCheck, Layers, Wrench, Stethoscope,
 } from 'lucide-react';
 import { call } from '../lib/api.js';
 import { useApp } from '../context.jsx';
 import { ago, rate, bytes, when } from '../lib/format.js';
 import { Page } from '../components/Page.jsx';
-import { Card, Meter, Badge, Loading, useAsync, Sparkline, ActionButton } from '../components/ui.jsx';
+import { Card, Meter, Badge, Loading, Empty, CountUp, useAsync, Sparkline, ActionButton } from '../components/ui.jsx';
+import HealthDialog from '../components/HealthDialog.jsx';
 import { useLiveStats } from '../views/MonitorView.jsx';
 import { modulePath } from '../nav.js';
 
@@ -85,7 +87,7 @@ function headline(s, missing) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { key } = useLocation();
-  const { tweakById, applyMany, runBatch, toast, info } = useApp();
+  const { tweakById, runBatch, toast, info } = useApp();
   // Keyed on the navigation, so returning here after the first-run setup shows the new score.
   const sum = useAsync(() => call('dashboard:summary'), [key]);
   const machine = useAsync(() => call('machine:get'), []);
@@ -97,10 +99,7 @@ export default function Dashboard() {
   const runnable = missing.filter((t) => info?.isAdmin || !t.admin);
   const volume = h?.volumes?.find((v) => /^C:/i.test(v.letter)) || h?.volumes?.[0];
 
-  const optimize = async () => {
-    const res = await applyMany(runnable, { title: 'Otimização recomendada', source: 'otimização recomendada' });
-    if (res) sum.reload();
-  };
+  const [health, setHealth] = useState(null); // which step of the health dialog is open
 
   // The alert comes from the last sweep, so re-read first: only what is still undone gets re-applied.
   const verifyAndRepair = async () => {
@@ -115,11 +114,13 @@ export default function Dashboard() {
   };
 
   if (sum.loading && !s) return <Page title="Visão geral"><Loading label="Calculando a saúde do sistema…" /></Page>;
-  if (!s) return <Page title="Visão geral"><Loading label="Não foi possível ler o sistema." /></Page>;
+  if (!s) return <Page title="Visão geral"><Empty title="Não foi possível ler o sistema" action={<button className="btn btn-sm" onClick={sum.reload}>Tentar de novo</button>}>{sum.error || 'O Windows não respondeu à leitura.'}</Empty></Page>;
 
   const head = headline(s, missing.length);
   const cpu = m?.cpuName?.replace(/\s+\d+-Core Processor/i, '').replace(/\(R\)|\(TM\)/g, '').trim();
-  const disk = h?.disks?.find((x) => /ssd|nvme/i.test(`${x.media} ${x.bus}`)) || h?.disks?.[0];
+  // Physical disks (not volumes), SSDs first and the largest on top; the card shows two and links to the rest.
+  const isSsd = (x) => /ssd|nvme/i.test(`${x.media} ${x.bus}`);
+  const disks = [...(h?.disks || [])].sort((a, b) => isSsd(b) - isSsd(a) || b.size - a.size);
   const ramSpeed = h?.memory?.modules?.[0]?.speed;
 
   return (
@@ -139,9 +140,13 @@ export default function Dashboard() {
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0, 0.9fr) minmax(0, 1.6fr)', marginTop: 28 }}>
         <Card>
           <div className="stat-label" style={{ fontSize: 15, color: 'var(--text-1)' }}>Saúde do sistema</div>
-          <div className="score-value"><b>{s.score}</b><span>/ 100</span></div>
+          <button className="score-value score-button" onClick={() => setHealth('diagnosis')} title="Ver o que compõe a nota"><b><CountUp value={s.score} /></b><span>/ 100</span></button>
           <div className="health-bar" role="meter" aria-valuenow={s.score} aria-valuemin={0} aria-valuemax={100} aria-label="Saúde do sistema">
             <div style={{ width: `${Math.max(0, Math.min(100, s.score))}%` }} />
+          </div>
+          <div className="row wrap" style={{ marginTop: 16 }}>
+            {runnable.length > 0 && <button className="btn btn-sm btn-primary" onClick={() => setHealth('confirm')}><Zap /> Otimizar agora</button>}
+            <button className="btn btn-sm" onClick={() => setHealth('diagnosis')}><Stethoscope /> Ver diagnóstico</button>
           </div>
         </Card>
         <Card style={{ display: 'flex', alignItems: 'center' }}>
@@ -162,7 +167,7 @@ export default function Dashboard() {
               )}
             </div>
             {runnable.length ? (
-              <button className="btn btn-primary" onClick={optimize}>Otimizar agora <ArrowRight /></button>
+              <button className="btn" onClick={() => setHealth('confirm')}>Ver os ajustes <ArrowRight /></button>
             ) : (
               <button className="btn" onClick={() => navigate('/profiles')}><Layers /> Ver perfis</button>
             )}
@@ -189,7 +194,13 @@ export default function Dashboard() {
               <div className="machine-row"><Cpu /> {cpu}</div>
               <div className="machine-row"><MonitorCog /> {m.gpus.map((g) => g.name).join(' + ')}</div>
               <div className="machine-row"><MemoryStick /> {m.ramGb} GB{ramSpeed ? ` · ${ramSpeed} MT/s` : ''}</div>
-              <div className="machine-row"><HardDrive /> {disk ? `${bytes(disk.size, 0)} (${disk.media}${disk.bus ? ` ${disk.bus}` : ''})` : m.ssd ? 'SSD' : '—'}</div>
+              {disks.slice(0, 2).map((d, i) => <div key={`${d.name}${i}`} className="machine-row"><HardDrive /> <span className="ellipsis">{d.name}</span> <span className="muted">{bytes(d.size, 0)} · {d.media}{d.bus ? ` ${d.bus}` : ''}</span></div>)}
+              {!disks.length && <div className="machine-row"><HardDrive /> {m.ssd ? 'SSD' : '—'}</div>}
+              {disks.length > 2 && (
+                <Link to="/hardware/disks" className="machine-row link-more" title="Visualize todos os dispositivos em Detalhes">
+                  <span style={{ width: 18 }} /> +{disks.length - 2} dispositivo{disks.length > 3 ? 's' : ''} · ver todos <ArrowRight size={14} />
+                </Link>
+              )}
             </>
           ) : <Loading label="Detectando hardware…" />}
         </Card>
@@ -201,7 +212,7 @@ export default function Dashboard() {
             {s.factors.map((f) => (
               <div key={f.id}>
                 <div className="row small" style={{ marginBottom: 6 }}>
-                  <span className="grow">{f.label}</span>
+                  <span className="grow" title={`Vale ${f.weight} pontos da nota`}>{f.label}</span>
                   <span className="muted">{f.value}</span>
                   <span className="dim tiny" style={{ width: 44, textAlign: 'right' }}>{Math.round(f.weight * f.score)}/{f.weight}</span>
                 </div>
@@ -246,6 +257,7 @@ export default function Dashboard() {
           </div>
         </>
       )}
+      {health && <HealthDialog summary={s} missing={missing} runnable={runnable} start={health} onClose={() => setHealth(null)} onSummary={sum.setData} />}
     </Page>
   );
 }

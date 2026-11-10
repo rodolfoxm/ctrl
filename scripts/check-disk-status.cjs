@@ -53,4 +53,9 @@ assert.equal(seagate.attributes.find((a) => a.id === 'C2').raw.slice(0, 2), '0x'
 assert.equal(seagate.attributes.find((a) => a.id === 'C1').raw, (533324).toLocaleString('pt-BR'));
 assert.equal(seagate.health, 'Healthy');
 
+// Space is per physical disk; a disk without volumes reports none instead of zero.
+assert.deepEqual([wd.used, wd.free], [null, null]);
+const full = summarize(sata({ ata: hddOk, volSize: 1000, volFree: 250, letters: ['D:'] }));
+assert.deepEqual([full.used, full.free, full.letters], [750, 250, ['D:']]);
+
 console.log('disk status ok');

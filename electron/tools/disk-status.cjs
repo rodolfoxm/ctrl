@@ -123,6 +123,7 @@ function summarize(d) {
   const byId = (id) => attrs.find((a) => a.id === id);
   const wear = d.nvme ? d.nvme.used : life ? 100 - life.life : null;
   return {
+    used: d.volSize ? d.volSize - d.volFree : null, free: d.volSize ? d.volFree : null, letters: d.letters || [],
     name: d.name, serial: d.serial, media: d.media, bus: d.bus, size: d.size, firmware: d.firmware, status: d.status, health,
     temperature: d.nvme?.temp ?? d.temperature ?? (byId(0xc2) ? byId(0xc2).raw % 256 : null),
     wear,

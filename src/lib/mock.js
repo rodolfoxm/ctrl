@@ -152,7 +152,7 @@ const hwStatic = {
   board: { manufacturer: 'ASUSTeK COMPUTER INC.', product: 'ROG STRIX B650-A GAMING WIFI', bios: 'American Megatrends 2611', biosDate: '2024-08-01' },
   memory: { total: 34359738368, modules: [{ size: 17179869184, speed: 6000, maker: 'Kingston', part: 'KF560C30-16' }, { size: 17179869184, speed: 6000, maker: 'Kingston', part: 'KF560C30-16' }] },
   gpus: [{ name: 'NVIDIA GeForce RTX 4070', driver: '32.0.15.6614', vram: 12884901888, resolution: '2560x1440', refresh: 165 }],
-  disks: [{ name: 'Samsung SSD 990 PRO 2TB', media: 'SSD', bus: 'NVMe', size: 2000398934016 }],
+  disks: [{ name: 'Samsung SSD 990 PRO 2TB', media: 'SSD', bus: 'NVMe', size: 2000398934016 }, { name: 'ST2000DM008-2FR102', media: 'HDD', bus: 'SATA', size: 2000398934016 }, { name: 'KINGSTON SKC3000S1024G', media: 'SSD', bus: 'NVMe', size: 1024209543168 }, { name: 'WDS1TB2G0A-00JH30', media: 'SSD', bus: 'SATA', size: 1000204886016 }],
   volumes: [{ letter: 'C:', size: 1999000000000, free: 812000000000 }],
   network: [{ name: 'Ethernet', description: 'Intel(R) Ethernet Controller I226-V', speed: '2.5 Gbps' }],
 };
@@ -209,15 +209,16 @@ const handlers = {
     await wait(600);
     const quick = snapshot.quickWins;
     const active = quick.filter((id) => status[id]);
+    const factors = [
+      { id: 'quick', label: 'Otimizações essenciais ativas', value: `${active.length}/${quick.length}`, weight: 45, score: active.length / quick.length },
+      { id: 'restore', label: 'Ponto de restauração recente', value: 'ontem', weight: 15, score: 1 },
+      { id: 'drift', label: 'Tweaks sem drift', value: state.sweeps[0] ? `${state.sweeps[0].drifted.length} desfeitos` : 'não verificado', weight: 15, score: 0.6 },
+      { id: 'disk', label: 'Espaço livre no disco do sistema', value: '41%', weight: 15, score: 1 },
+      { id: 'maintenance', label: 'Manutenção nos últimos 30 dias', value: 'limpeza 28/10/2026 · nunca verificou', weight: 10, score: 0.5 },
+    ];
     return {
-      score: Math.round(40 + 45 * (active.length / quick.length)),
-      factors: [
-        { id: 'quick', label: 'Otimizações essenciais ativas', value: `${active.length}/${quick.length}`, weight: 45, score: active.length / quick.length },
-        { id: 'restore', label: 'Ponto de restauração recente', value: 'ontem', weight: 15, score: 1 },
-        { id: 'drift', label: 'Tweaks sem drift', value: state.sweeps[0] ? `${state.sweeps[0].drifted.length} desfeitos` : 'não verificado', weight: 15, score: 0.6 },
-        { id: 'disk', label: 'Espaço livre no disco do sistema', value: '41%', weight: 15, score: 1 },
-        { id: 'maintenance', label: 'Manutenção nos últimos 30 dias', value: 'limpeza 28/10/2026 · nunca verificou', weight: 10, score: 0.5 },
-      ],
+      score: Math.round(factors.reduce((a, f) => a + f.weight * f.score, 0)),
+      factors,
       appliedCount: Object.keys(state.applied).length,
       quickWinsMissing: quick.filter((id) => !status[id]),
       restorePoint: { seq: 12, description: 'ctrl - antes das otimizações', created: new Date(Date.now() - 864e5).toISOString() },
@@ -320,8 +321,8 @@ const handlers = {
     { name: 'explorer', id: 3234, mem: 2.2e8, cpu: 40.1 }, { name: 'steamwebhelper', id: 4234, mem: 1.9e8, cpu: 22.7 },
   ],
   'health:disks': async () => (await wait(500), [
-    { name: 'Samsung SSD 990 PRO 2TB', serial: 'S6Z2NJ0W123456', media: 'SSD', bus: 'NVMe', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '4B2QJXD7', temperature: 41, wear: 3, powerOnHours: 5821, mediaErrors: 0, startStop: 812, countersAvailable: true, nvmeRows: [{ name: 'Vida útil usada', value: '3%' }, { name: 'Total gravado', value: '12,4 TB' }, { name: 'Desligamentos inesperados', value: '21' }] },
-    { name: 'ST2000DM008-2FR102', serial: 'ZFL1ABCD', media: 'HDD', bus: 'SATA', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '0001', temperature: 34, wear: null, powerOnHours: 14210, mediaErrors: 0, startStop: 2210, countersAvailable: true, attributes: [{ id: '05', name: 'Setores realocados', cur: 100, worst: 100, thr: 10, raw: '0' }, { id: '09', name: 'Horas ligado', cur: 84, worst: 84, thr: 0, raw: '14.210' }, { id: 'C5', name: 'Setores pendentes', cur: 100, worst: 100, thr: 0, raw: '0' }] },
+    { name: 'Samsung SSD 990 PRO 2TB', serial: 'S6Z2NJ0W123456', media: 'SSD', bus: 'NVMe', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '4B2QJXD7', used: 1180591620717, free: 819807313299, letters: ['C:'], temperature: 41, wear: 3, powerOnHours: 5821, mediaErrors: 0, startStop: 812, countersAvailable: true, nvmeRows: [{ name: 'Vida útil usada', value: '3%' }, { name: 'Total gravado', value: '12,4 TB' }, { name: 'Desligamentos inesperados', value: '21' }] },
+    { name: 'ST2000DM008-2FR102', serial: 'ZFL1ABCD', media: 'HDD', bus: 'SATA', size: 2000398934016, health: 'Healthy', status: 'OK', firmware: '0001', used: 1500000000000, free: 500398934016, letters: ['D:', 'E:'], temperature: 34, wear: null, powerOnHours: 14210, mediaErrors: 0, startStop: 2210, countersAvailable: true, attributes: [{ id: '05', name: 'Setores realocados', cur: 100, worst: 100, thr: 10, raw: '0' }, { id: '09', name: 'Horas ligado', cur: 84, worst: 84, thr: 0, raw: '14.210' }, { id: 'C5', name: 'Setores pendentes', cur: 100, worst: 100, thr: 0, raw: '0' }] },
   ]),
   'health:battery': async () => ({ present: false }),
   'health:boot': async () => (await wait(400), {

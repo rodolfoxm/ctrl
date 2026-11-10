@@ -54,6 +54,14 @@ brigariam com ele. Em Sobre, o cartão "Apoiar o desenvolvimento" abre o site; n
 
 Depois dela, `Tour.jsx` passa por cada item da barra lateral, sem bloquear a tela, com "Próximo" e "Pular tutorial" (Esc também pula). Não é salvo: quem só atualiza não vê, e o botão "Ver o tutorial" no Guia abre de novo.
 
+## Saúde do sistema
+
+A nota vem de `dashboard:summary` (cinco fatores com peso, lidos do sistema). `HealthDialog.jsx` explica cada fator, mostra o que só o usuário resolve e conduz o "Otimizar agora": resumo → `applyMany` (backup, ponto de restauração, progresso) → nova leitura da nota → antes e depois, com desfazer. A nota nunca é estimada na interface.
+
+## Movimento
+
+Só opacidade e transformação, entre 0,14 s e 0,34 s: cartões entram em sequência (`rise`), janelas com `modal-in`, botões afundam ao clicar e a nota conta até o valor (`CountUp`). O bloco `prefers-reduced-motion` no fim de `styles.css` desliga tudo.
+
 ## Estados
 
 Carregando (spinner/`Loading`), vazio (`Empty`), erro (toast e `ErrorBoundary` por tela), "sem leitura" para ajustes cujo estado não pode

@@ -80,7 +80,11 @@ foreach ($d in @(Get-PhysicalDisk -ErrorAction SilentlyContinue)) {
       }
     }
   }
+  # Volumes are summed per physical disk, so a drive with several partitions counts once.
+  $vols = @(); try { $vols = @(Get-Partition -DiskNumber ([int]$id) -ErrorAction Stop | Get-Volume -ErrorAction SilentlyContinue | Where-Object { $_.Size -gt 0 }) } catch {}
   $out += [pscustomobject]@{
+    volSize = [int64](($vols | Measure-Object Size -Sum).Sum); volFree = [int64](($vols | Measure-Object SizeRemaining -Sum).Sum)
+    letters = @($vols | Where-Object DriveLetter | ForEach-Object { [string]$_.DriveLetter + ':' })
     name = $d.FriendlyName; serial = ([string]$d.SerialNumber).Trim(); media = [string]$d.MediaType; bus = [string]$d.BusType
     size = [int64]$d.Size; windows = [string]$d.HealthStatus; status = [string]($d.OperationalStatus -join ', ')
     firmware = $d.FirmwareVersion; counters = [bool]$rc

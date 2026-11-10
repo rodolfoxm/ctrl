@@ -197,8 +197,18 @@ async function restoreParking() {
 }
 
 // ---------------- public API ----------------
+// A new install starts with the Core on, unless a tool that fights it is open. An install that already
+// ran keeps what it had: off when the user never touched it.
+async function initDefault() {
+  const s = store.load();
+  if (s.batuta) return;
+  const on = !s.onboarded && !(await rivals().catch(() => ['?'])).length;
+  store.update((st) => { st.batuta = { enabled: on }; });
+}
+
 async function start(onEvent) {
   notify = onEvent || notify;
+  await initDefault();
   if (config().enabled && !worker) await spawnWorker();
 }
 
@@ -317,4 +327,4 @@ $b = [BatutaNative]::MemoryList(); $ok = [BatutaNative]::PurgeStandby(); $a = [B
   return res?.ok ? res : { ok: false, error: 'O Windows recusou a limpeza (precisa de administrador).' };
 }
 
-module.exports = { start, stop, save, state, rivals, processes, NOT_GAME, _sanitize: sanitize, purgeNow, suggest, parking, setParking, restoreParking, listPlans, restorePlan, GAMES, BACKGROUND, DEFAULTS, _workerScript: workerScript };
+module.exports = { start, stop, _initDefault: initDefault, save, state, rivals, processes, NOT_GAME, _sanitize: sanitize, purgeNow, suggest, parking, setParking, restoreParking, listPlans, restorePlan, GAMES, BACKGROUND, DEFAULTS, _workerScript: workerScript };

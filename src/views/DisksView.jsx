@@ -2,7 +2,7 @@ import { HeartPulse, ShieldAlert, Thermometer } from 'lucide-react';
 import { call } from '../lib/api.js';
 import { useApp } from '../context.jsx';
 import { bytes } from '../lib/format.js';
-import { Card, Badge, Stat, Meter, Loading, useAsync, Callout } from '../components/ui.jsx';
+import { Card, Badge, Stat, Meter, Loading, useAsync, Callout, Empty } from '../components/ui.jsx';
 
 const HEALTH = { Healthy: ['success', 'Saudável'], Warning: ['warning', 'Atenção'], Unhealthy: ['danger', 'Com problemas'], Unknown: ['', 'Desconhecido'] };
 
@@ -44,12 +44,13 @@ export default function DisksView() {
   const { info } = useApp();
   const disks = useAsync(() => call('health:disks'), []);
   if (disks.loading && !disks.data) return <Loading label="Lendo contadores de confiabilidade…" />;
-  if (disks.error) return <Callout tone="danger">{disks.error}</Callout>;
+  if (disks.error) return <Callout tone="danger">{disks.error} <button className="btn btn-sm" style={{ marginLeft: 10 }} onClick={disks.reload}>Tentar de novo</button></Callout>;
   return (
     <div className="stack" style={{ gap: 14 }}>
       {!info?.isAdmin && (
         <Callout tone="warning" icon={ShieldAlert}>Temperatura, desgaste e horas ligadas só podem ser lidos com o app aberto como administrador.</Callout>
       )}
+      {disks.data?.length === 0 && <Empty title="Nenhum disco encontrado">O Windows não informou discos físicos. Abra o ctrl como administrador e tente de novo.</Empty>}
       {(disks.data || []).map((d) => {
         const [tone, label] = HEALTH[d.health] || ['', d.health || 'Desconhecido'];
         const lifeLeft = d.wear != null ? Math.max(0, 100 - d.wear) : null;
@@ -61,6 +62,15 @@ export default function DisksView() {
             icon={HeartPulse}
             end={<Badge tone={tone}>{label}</Badge>}
           >
+            {d.used != null && (
+              <div style={{ marginBottom: 14 }}>
+                <div className="row small" style={{ marginBottom: 6 }}>
+                  <span className="grow">{bytes(d.used, 0)} usados de {bytes(d.used + d.free, 0)}{d.letters?.length ? ` · ${d.letters.join(' ')}` : ''}</span>
+                  <span className="muted">{bytes(d.free, 0)} livres</span>
+                </div>
+                <Meter value={(d.used / (d.used + d.free)) * 100} color={d.free / (d.used + d.free) < 0.1 ? 'var(--warning)' : undefined} />
+              </div>
+            )}
             <div className="grid grid-4">
               <Stat label="Temperatura" value={d.temperature ?? '—'} unit={d.temperature != null ? '°C' : ''} color={tempTone(d.temperature)} />
               <Stat label="Vida útil restante" value={lifeLeft != null ? lifeLeft : '—'} unit={lifeLeft != null ? '%' : ''} color={lifeLeft != null && lifeLeft < 20 ? 'var(--danger)' : undefined} sub={d.media === 'HDD' ? 'Não se aplica a HDs' : lifeLeft == null ? 'Não informada pelo disco' : ''} />

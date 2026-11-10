@@ -1,5 +1,13 @@
 # Changelog
 
+## Próxima versão
+
+- **Diagnóstico da Saúde do sistema.** Clique na nota ou em "Ver diagnóstico" para ver o que tira pontos, quanto cada item pesa, o que já está em dia e o que depende de você, com o atalho para resolver.
+- **Otimizar agora, do começo ao fim.** Mostra os ajustes que serão aplicados antes de mexer em qualquer coisa, aplica com backup, confere no sistema e mostra a nota antes e depois, lida de novo do Windows. Dá para desfazer ali mesmo, e o que falhar aparece com o motivo.
+- **Core ligado por padrão** em instalações novas, se nenhum programa que briga com ele estiver aberto. Quem já usa o ctrl continua como estava.
+- **Sua máquina** mostra os dois discos principais e "+N dispositivos", que abre a lista completa. A Saúde dos discos passou a mostrar espaço usado e livre de cada disco físico.
+- Animações mais suaves: cartões que entram em sequência, janelas, botões e a nota que conta até o valor. Tudo respeita a opção do Windows de reduzir movimento.
+
 ## 1.5.0 — 05/11/2026
 
 - **Saúde dos discos com as regras do CrystalDiskInfo.** O ctrl agora lê os limites definidos pelo fabricante e avalia cada disco do mesmo jeito: Saudável, Atenção, Com problemas ou Desconhecido. Cada disco ganhou "Todos os atributos", com atual, pior, limite e valor bruto. A vida útil de SSDs SATA cobre mais marcas.
