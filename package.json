@@ -1,7 +1,7 @@
 {
   "name": "ctrl",
   "productName": "ctrl",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Otimizador de Windows que guarda o valor original de cada ajuste, verifica se o Windows desfez algo e desfaz qualquer alteração.",
   "main": "electron/main.cjs",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -10,7 +10,7 @@
     "web": "vite",
     "build": "vite build",
     "start": "vite build && electron .",
-    "check": "node scripts/check-catalog.cjs && node scripts/check-disk-status.cjs && node scripts/check-core.cjs",
+    "check": "node scripts/check-catalog.cjs && node scripts/check-disk-status.cjs && node scripts/check-core.cjs && node scripts/check-msi.cjs",
     "dist": "vite build && electron-builder --win nsis",
     "lint": "eslint .",
     "verify-rules": "node scripts/verify-quality-rules.mjs",

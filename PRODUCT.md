@@ -28,7 +28,7 @@ Usuários de Windows 10/11 (principalmente gamers) que querem desempenho, privac
 
 ## Escopo atual
 
-Catálogo de 241 tweaks em 28 módulos, 12 correções (SFC, DISM, ChkDsk, rede…) , 6 perfis prontos e remoção reversível de 95 apps pré-instalados (Microsoft, parceiros e fabricantes). Interface em pt-BR com a identidade do ctrl. Instalador NSIS em português, com termos de uso (isenção de responsabilidade) que precisam ser aceitos, e que sempre abre o app como administrador. Licença PolyForm Noncommercial 1.0.0. Código e versões em https://github.com/rodolfoxm/ctrl.
+Catálogo de 242 tweaks em 28 módulos, 12 correções (SFC, DISM, ChkDsk, rede…) , 6 perfis prontos e remoção reversível de 95 apps pré-instalados (Microsoft, parceiros e fabricantes). Interface em pt-BR com a identidade do ctrl. Instalador NSIS em português, com termos de uso (isenção de responsabilidade) que precisam ser aceitos, e que sempre abre o app como administrador. Licença PolyForm Noncommercial 1.0.0. Código e versões em https://github.com/rodolfoxm/ctrl.
 
 ## Fora de escopo
 

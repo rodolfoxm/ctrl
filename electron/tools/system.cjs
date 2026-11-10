@@ -158,13 +158,35 @@ Get-ChildItem 'HKLM:\SYSTEM\CurrentControlSet\Enum\PCI' -ErrorAction SilentlyCon
 ConvertTo-Json -InputObject @($out | Sort-Object class, name) -Compress`);
 }
 
+/**
+ * Writes MSISupported, or removes it when value is null (the driver's own default). Prints what was there
+ * before: "absent" or the number. Kept apart from msiSet so it can be exercised on a scratch key.
+ */
+function msiScript(key, value) {
+  return `
+$old = if (Test-Path -LiteralPath ${q(key)}) { (Get-Item -LiteralPath ${q(key)}).GetValue('MSISupported', $null) } else { $null }
+${value == null
+    ? `if ($null -ne $old) { Remove-ItemProperty -LiteralPath ${q(key)} -Name MSISupported -ErrorAction Stop }`
+    : `if (-not (Test-Path -LiteralPath ${q(key)})) { New-Item -Path ${q(key)} -Force | Out-Null }
+New-ItemProperty -LiteralPath ${q(key)} -Name MSISupported -Value ${Number(value)} -PropertyType DWord -Force | Out-Null`}
+if ($null -eq $old) { 'absent' } else { [string]$old }`;
+}
+
 async function msiSet(id, enabled) {
   if (!/^HKLM:\\SYSTEM\\CurrentControlSet\\Enum\\PCI\\/.test(id)) throw new Error('Dispositivo inválido.');
   const key = `${id}\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties`;
-  const res = await runPowerShell(`
-if (-not (Test-Path -LiteralPath ${q(key)})) { New-Item -Path ${q(key)} -Force | Out-Null }
-New-ItemProperty -LiteralPath ${q(key)} -Name MSISupported -Value ${enabled ? 1 : 0} -PropertyType DWord -Force | Out-Null`);
+  // Turning it off after the ctrl turned it on puts back what the device had (often no value at all),
+  // instead of forcing 0. The first write keeps the original; turning off without a backup writes 0, as asked.
+  const backup = store.load().msiBackup?.[id];
+  const value = enabled ? 1 : backup !== undefined ? backup : 0;
+  const res = await runPowerShell(msiScript(key, value));
   if (!res.ok) throw new Error(res.stderr);
+  const before = res.stdout.trim().split(/\r?\n/).pop();
+  store.update((s) => {
+    s.msiBackup = s.msiBackup || {};
+    if (enabled && s.msiBackup[id] === undefined) s.msiBackup[id] = before === 'absent' ? null : Number(before);
+    else if (!enabled) delete s.msiBackup[id];
+  });
   store.log({ action: enabled ? 'apply' : 'revert', id: 'msi', name: `Modo MSI ${enabled ? 'ativado' : 'desativado'}: ${id.split('\\').slice(-2).join('\\')}`, ok: true });
   return { ok: true, restart: 'reboot' };
 }
@@ -206,6 +228,7 @@ ConvertTo-Json -InputObject @{ series = $series } -Depth 3 -Compress`, { timeout
 }
 
 module.exports = {
+  _msiScript: msiScript,
   wuStatus, wuPause, wuResume,
   startupList, startupSet,
   timerStatus, timerSet, timerReset,

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.2 — 10/11/2026
+
+- **P-cores sempre ativos em CPUs Intel híbridas.** O ajuste "Desativar estacionamento de núcleos" só valia para os E-cores nessas CPUs: os P-cores, onde o jogo roda, têm uma configuração própria do Windows. O novo ajuste "Desativar estacionamento dos P-cores" cobre os dois e entra na otimização recomendada. Aparece só em CPUs híbridas (Intel 12ª geração ou mais nova).
+- **Modo MSI com backup de verdade.** Desligar o MSI de um dispositivo que o ctrl ligou agora devolve o valor original (normalmente o padrão do driver), em vez de gravar 0.
+- **Overlays não contam como jogo.** Programas de overlay dentro da pasta de um jogo não recebem mais a regra de jogo do Core nem deixam o Core em modo jogo.
+
 ## 1.6.1 — 10/11/2026
 
 - **Core mais leve durante os jogos.** Medido lado a lado, cada passada do Core gasta cerca de 40% menos CPU (de ~31 ms para ~19 ms). Com um jogo aberto, ele passa a olhar os processos a cada 5 segundos em vez de 2, roda com prioridade abaixo do normal e em modo de eficiência, para nunca disputar a CPU com o jogo.

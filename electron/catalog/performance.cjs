@@ -10,9 +10,18 @@ module.exports = [
   {
     id: 'cpu-core-parking-off', module: 'cpu',
     name: 'Desativar estacionamento de núcleos',
-    description: 'Mantém 100% dos núcleos ativos na tomada (CPMINCORES). Evita a latência de “acordar” núcleos estacionados quando um jogo pede mais threads de repente.',
+    description: 'Mantém 100% dos núcleos ativos na tomada (CPMINCORES; nas CPUs híbridas, os E-cores). Evita a latência de “acordar” núcleos estacionados quando um jogo pede mais threads de repente.',
     impact: 'medium', risk: 'safe', admin: true, restart: 'none', tags: ['quick-win'],
     script: powerSetting(SUB_PROC, 'CPMINCORES', 100, null),
+  },
+  {
+    // On hybrid CPUs CPMINCORES covers efficiency class 0 (the E-cores) only; class 1 (the P-cores) has its own
+    // setting. A separate tweak keeps the snapshot of cpu-core-parking-off valid for who already applied it.
+    id: 'cpu-core-parking-pcores-off', module: 'cpu',
+    name: 'Desativar estacionamento dos P-cores (CPUs híbridas)',
+    description: 'Em CPUs Intel híbridas, o ajuste anterior só vale para os E-cores. Este mantém os P-cores, onde o jogo roda, sempre ativos na tomada (CPMINCORES1).',
+    impact: 'medium', risk: 'safe', admin: true, restart: 'none', requires: { hybrid: true }, tags: ['quick-win'],
+    script: powerSetting(SUB_PROC, 'CPMINCORES1', 100, null),
   },
   {
     id: 'cpu-min-state-100', module: 'cpu',

@@ -13,7 +13,7 @@ const PROTECTED = ['system', 'idle', 'registry', 'smss', 'csrss', 'wininit', 'wi
   'fontdrvhost', 'explorer', 'ctrl', 'powershell', 'conhost', 'searchhost', 'startmenuexperiencehost', 'shellexperiencehost', 'textinputhost'];
 
 // Executables that live inside game folders but are not the game.
-const NOT_GAME = 'crash|report|launcher|anticheat|easyanticheat|eac|beservice|battleye|vanguard|setup|redist|unins|dxsetup|helper|updater|prereq|ue4prereq|steamerrorreporter';
+const NOT_GAME = 'overlay|crash|report|launcher|anticheat|easyanticheat|eac|beservice|battleye|vanguard|setup|redist|unins|dxsetup|helper|updater|prereq|ue4prereq|steamerrorreporter';
 // Apps Steam distributes next to the games (same steamapps\common folder) that are not games.
 const NOT_GAME_DIR = String.raw`\\(driver booster for steam|soundpad|wallpaper_engine|steamvr|steamworks shared|steam controller configs|lossless scaling|obs studio|aseprite|blender|rpg maker[^\\]*|vtube studio|voicemod[^\\]*|fpsmonitor|msi afterburner)\\`;
 
