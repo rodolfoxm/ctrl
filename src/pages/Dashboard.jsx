@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Zap, Cpu, MemoryStick, MonitorCog, Wifi, HardDrive, ChevronRight, ArrowRight, CheckCircle2, AlertTriangle, XCircle, Undo2, BadgeCheck,
@@ -87,9 +87,16 @@ function headline(s, missing) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { key } = useLocation();
-  const { tweakById, runBatch, toast, info } = useApp();
-  // Keyed on the navigation, so returning here after the first-run setup shows the new score.
-  const sum = useAsync(() => call('dashboard:summary'), [key]);
+  const { tweakById, runBatch, toast, info, applied } = useApp();
+  const appliedCount = Object.keys(applied || {}).length;
+  // Read again on every visit, whenever a tweak is applied or undone anywhere, and when the window comes back
+  // from the tray: the app can sit there for days, and the Home must not show what it read back then.
+  const sum = useAsync(() => call('dashboard:summary'), [key, appliedCount]);
+  useEffect(() => {
+    const onShow = () => document.visibilityState === 'visible' && sum.reload();
+    document.addEventListener('visibilitychange', onShow);
+    return () => document.removeEventListener('visibilitychange', onShow);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- reload only bumps a counter, any copy works
   const machine = useAsync(() => call('machine:get'), []);
   const hw = useAsync(() => call('hw:static'), []);
   const s = sum.data;

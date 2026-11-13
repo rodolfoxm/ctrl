@@ -1,5 +1,9 @@
 # Changelog
 
+## Próxima versão
+
+- **Atividade recente sempre em dia.** A Visão geral mostrava "Nenhuma alteração feita ainda" mesmo com ajustes aplicados quando o ctrl ficava aberto na bandeja (por exemplo, iniciado com o Windows): ela guardava a leitura de quando foi aberta. Agora lê de novo quando a janela volta a aparecer e sempre que um ajuste é aplicado ou desfeito.
+
 ## 1.6.3 — 12/11/2026
 
 - **Resolução do timer em 0,5 ms por padrão.** O ctrl mantém 0,5 ms enquanto estiver aberto (inclusive na bandeja), desde o momento em que abre. A escolha fica salva: outro valor ou "Liberar" em Jogos → Resolução do timer passa a valer também nas próximas aberturas. No Windows 11, para valer para os jogos, o ajuste "Resolução de timer global" precisa estar aplicado.
