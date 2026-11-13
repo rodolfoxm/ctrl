@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useTitle } from './Shell.jsx';
 
 export function Page({ title, children }) {
@@ -28,9 +28,6 @@ export function Hero({ title, children, actions, aside }) {
 export function SubNav({ items, active, onChange }) {
   const refs = useRef([]);
   const index = items.findIndex((i) => i.id === active);
-  useEffect(() => {
-    refs.current[index]?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
-  }, [index]);
   const onKey = (e) => {
     let next = null;
     if (e.key === 'ArrowRight') next = (index + 1) % items.length;

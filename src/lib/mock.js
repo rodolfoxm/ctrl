@@ -74,7 +74,7 @@ const state = {
     { id: 'c3', name: 'Valorant', exe: 'C:\\Riot Games\\VALORANT\\live\\VALORANT.exe', source: 'Manual' },
   ],
   tasks: new Set(),
-  timer: null,
+  timer: 0.5,
 };
 // Pretend a few tweaks were applied earlier so Guardian has something to show.
 for (const t of snapshot.tweaks.filter((x) => status[x.id]).slice(0, 6)) {

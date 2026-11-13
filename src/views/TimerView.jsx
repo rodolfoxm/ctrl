@@ -15,7 +15,7 @@ export default function TimerView() {
   const set = async (ms) => {
     const res = await call('timer:set', ms);
     if (res?.ok === false) toast(res.error, { tone: 'error' });
-    else toast(`Resolução de ${ms} ms mantida enquanto o app estiver aberto.`, { tone: 'success' });
+    else toast(`Resolução de ${ms} ms mantida enquanto o ctrl estiver aberto, também nas próximas vezes.`, { tone: 'success' });
     setTimeout(st.reload, 800);
   };
   const reset = async () => {
@@ -38,7 +38,8 @@ export default function TimerView() {
         </div>
       </Card>
       <Callout tone="info" icon={Info}>
-        A resolução só vale enquanto o ctrl estiver aberto (é assim que o Windows funciona: o pedido é do processo).
+        O ctrl mantém 0,5 ms por padrão, a partir de quando abre. A resolução só vale enquanto ele estiver aberto, inclusive na bandeja
+        (é assim que o Windows funciona: o pedido é do processo). "Liberar" devolve a decisão ao Windows, também nas próximas vezes.
         No Windows 11, ela só afeta outros processos com o tweak{' '}
         <Link to={`${modulePath('latency')}?tweak=latency-global-timer`}>Resolução de timer global</Link>.
         {settings?.liveGameTimer && ' O Modo Jogo ao Vivo também aplica 0,5 ms automaticamente durante as sessões de jogo.'}

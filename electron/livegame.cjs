@@ -40,8 +40,9 @@ if (-not $g) { $g = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c' }
 powercfg -setactive $g; 'ok'`);
     if (r2.ok) applied.push('Plano de energia de alto desempenho');
   }
-  if (s.liveGameTimer) {
-    tools.timerSet(0.5);
+  // Already held at 0.5 ms (the default): nothing to do now, nothing to undo when the game closes.
+  if (s.liveGameTimer && !(tools.timerHolding() <= 0.5)) {
+    tools.timerSet(0.5, { quiet: true });
     applied.push('Resolução de timer em 0,5 ms');
   }
   session = { gameId: game.id, name: game.name, exe: game.exe, pid, start: new Date().toISOString(), previousPlan, applied };
@@ -54,7 +55,12 @@ async function end() {
   const s = session;
   session = null;
   if (s.previousPlan) await runPowerShell(`powercfg -setactive ${q(s.previousPlan)}`);
-  if (s.applied.some((a) => a.includes('timer'))) tools.timerReset();
+  if (s.applied.some((a) => a.includes('timer'))) {
+    const saved = store.load().settings.timerMs;
+    tools.timerStop();
+    if (saved && saved !== 0.5) tools.timerSet(saved, { quiet: true }); // back to the user's own choice
+    else store.update((st) => { st.settings.timerMs = saved ?? null; });
+  }
   const record = { game: s.name, exe: s.exe, start: s.start, end: new Date().toISOString(), actions: s.applied };
   store.update((st) => {
     st.sessions.unshift(record);

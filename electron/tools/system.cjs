@@ -116,27 +116,39 @@ $min = 0; $max = 0; $cur = 0; [void][CtrlTimer]::NtQueryTimerResolution([ref]$mi
   return { ...r, holding: timerTarget };
 }
 
-/** Holds the requested resolution (ms) for as long as the app runs. */
-function timerSet(ms) {
+/**
+ * Holds the requested resolution (ms) for as long as the app runs, and saves it as the choice applied on the
+ * next launch. `quiet` is for that launch: no history entry each time the app opens.
+ */
+function timerSet(ms, { quiet = false } = {}) {
   const units = Math.round(Math.max(0.5, Math.min(15.625, Number(ms))) * 10000);
-  timerReset();
+  stopHold();
   timerStop = streamPowerShell(`${NT_TIMER}
 $cur = 0; [void][CtrlTimer]::NtSetTimerResolution(${units}, $true, [ref]$cur)
 [Console]::Out.WriteLine($cur)
 while ($true) { Start-Sleep -Seconds 3600 }`, () => {});
   timerTarget = units / 10000;
-  store.log({ action: 'apply', id: 'timer-resolution', name: `Resolução do timer em ${timerTarget} ms`, ok: true });
+  store.update((s) => { s.settings.timerMs = timerTarget; });
+  if (!quiet) store.log({ action: 'apply', id: 'timer-resolution', name: `Resolução do timer em ${timerTarget} ms`, ok: true });
   return { ok: true, holding: timerTarget };
 }
 
-function timerReset() {
+function stopHold() {
   if (timerStop) timerStop();
   timerStop = null;
   const was = timerTarget;
   timerTarget = null;
-  if (was) store.log({ action: 'revert', id: 'timer-resolution', name: 'Resolução do timer liberada', ok: true });
+  return was;
+}
+
+/** The user releases it: Windows decides again, also on the next launches. */
+function timerReset() {
+  if (stopHold()) store.log({ action: 'revert', id: 'timer-resolution', name: 'Resolução do timer liberada', ok: true });
+  store.update((s) => { s.settings.timerMs = null; });
   return { ok: true };
 }
+
+const timerHolding = () => timerTarget;
 
 // ---------------- Modo MSI ----------------
 async function msiList() {
@@ -231,7 +243,7 @@ module.exports = {
   _msiScript: msiScript,
   wuStatus, wuPause, wuResume,
   startupList, startupSet,
-  timerStatus, timerSet, timerReset,
+  timerStatus, timerSet, timerReset, timerHolding, timerStop: stopHold,
   msiList, msiSet,
   dpcSample,
 };

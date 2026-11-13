@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.3 — 12/11/2026
+
+- **Resolução do timer em 0,5 ms por padrão.** O ctrl mantém 0,5 ms enquanto estiver aberto (inclusive na bandeja), desde o momento em que abre. A escolha fica salva: outro valor ou "Liberar" em Jogos → Resolução do timer passa a valer também nas próximas aberturas. No Windows 11, para valer para os jogos, o ajuste "Resolução de timer global" precisa estar aplicado.
+- **Abas corrigidas.** Quando não cabiam na largura da janela, as abas ficavam escondidas sem barra de rolagem e não dava para chegar nelas. Agora elas quebram em duas linhas e ficam todas visíveis.
+
 ## 1.6.2 — 10/11/2026
 
 - **P-cores sempre ativos em CPUs Intel híbridas.** O ajuste "Desativar estacionamento de núcleos" só valia para os E-cores nessas CPUs: os P-cores, onde o jogo roda, têm uma configuração própria do Windows. O novo ajuste "Desativar estacionamento dos P-cores" cobre os dois e entra na otimização recomendada. Aparece só em CPUs híbridas (Intel 12ª geração ou mais nova).

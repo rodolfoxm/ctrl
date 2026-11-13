@@ -30,6 +30,7 @@ const DEFAULTS = {
     intro: true,
     checkUpdates: true,
     accent: '#c8ff00',
+    timerMs: 0.5, // resolution held while the app runs; null = left to Windows
   },
 };
 

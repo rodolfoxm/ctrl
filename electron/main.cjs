@@ -119,7 +119,7 @@ async function quitApp() {
   quitting = true;
   await batuta.stop();
   hardware.stopLive(true);
-  sys.timerReset();
+  sys.timerStop(); // quitting ends the hold; the saved choice stays for the next launch
   await livegame.stop();
   app.quit();
 }
@@ -657,6 +657,8 @@ if (TASK) {
     });
     createWindow();
     syncTray();
+    const timerMs = store.load().settings.timerMs;
+    if (timerMs) sys.timerSet(timerMs, { quiet: true });
     startSentinel();
     batuta.start((e) => {
       send('batuta:event', e);
