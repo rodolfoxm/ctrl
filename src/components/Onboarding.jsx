@@ -119,6 +119,7 @@ export default function Onboarding() {
               <div className="stack" style={{ margin: '10px 0 16px' }}>
                 <div className="row"><div className="grow"><div>Ponto de restauração antes da primeira alteração</div><div className="tiny dim">Recomendado.</div></div><Switch on={settings?.autoRestorePoint} onChange={(v) => updateSettings({ autoRestorePoint: v })} label="Ponto de restauração" /></div>
                 <div className="row"><div className="grow"><div>Sentinela: verificar tweaks a cada 30 minutos</div><div className="tiny dim">Avisa quando o Windows desfizer algo.</div></div><Switch on={settings?.sentinel} onChange={(v) => updateSettings({ sentinel: v })} label="Sentinela" /></div>
+                <div className="row"><div className="grow"><div>Uso WSL, Docker, máquinas virtuais ou dual boot</div><div className="tiny dim">O ctrl esconde os ajustes que atrapalham isso. Os essenciais já são seguros para esses casos.</div></div><Switch on={settings?.virtUse} onChange={(v) => updateSettings({ virtUse: v })} label="Uso WSL, Docker, máquinas virtuais ou dual boot" /></div>
               </div>
             </>
           )}

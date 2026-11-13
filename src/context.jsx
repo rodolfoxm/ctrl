@@ -107,7 +107,7 @@ export function AppProvider({ children }) {
     if (res?.ok === false) {
       toast(res.error, { tone: 'error' });
       refreshState();
-    }
+    } else if ('virtUse' in patch) call('catalog:get').then(setCatalog); // which tweaks are hidden changed
   }, [toast, refreshState]);
 
   /** Remembers the strongest follow-up needed (Explorer restart, logoff or reboot). */

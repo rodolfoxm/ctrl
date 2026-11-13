@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.5 — 13/11/2026
+
+- **Aviso de reinício depois do Otimizar agora.** Alguns ajustes essenciais (prioridade de jogos no MMCSS, Power Throttling, limitação de rede) só valem depois de reiniciar. O resultado agora diz quais são e tem o botão "Reiniciar agora": quem mede o jogo antes de reiniciar vê um ganho menor que o real.
+- **"Uso WSL, Docker, máquinas virtuais ou dual boot".** Pergunta na primeira configuração e opção em Configurações → Comportamento. Ligada, esconde os ajustes que atrapalham isso: desligar o hypervisor (quebra o WSL 2, o Docker e as VMs do Hyper-V) e o menu de boot em 3 segundos. Os ajustes essenciais já eram seguros para esses casos.
+- **Core mais persistente com jogos que demoram a abrir.** Se a prioridade de E/S, a de GPU ou o "nunca economizar energia" falharem na abertura do jogo, o Core tenta de novo nas passadas seguintes (até 5 vezes).
+- **Plano por atividade respeita a bateria.** Em notebook na bateria, o Core não sobe mais para o plano de desempenho, e devolve o plano anterior até ligar o carregador.
+
 ## 1.6.4 — 13/11/2026
 
 - **Atividade recente sempre em dia.** A Visão geral mostrava "Nenhuma alteração feita ainda" mesmo com ajustes aplicados quando o ctrl ficava aberto na bandeja (por exemplo, iniciado com o Windows): ela guardava a leitura de quando foi aberta. Agora lê de novo quando a janela volta a aparecer e sempre que um ajuste é aplicado ou desfeito.

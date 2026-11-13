@@ -30,6 +30,7 @@ const DEFAULTS = {
     intro: true,
     checkUpdates: true,
     accent: '#c8ff00',
+    virtUse: false, // WSL, Docker, virtual machines or dual boot: hides tweaks that would break them
     timerMs: 0.5, // resolution held while the app runs; null = left to Windows
   },
 };

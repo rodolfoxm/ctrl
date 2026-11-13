@@ -120,6 +120,11 @@ async function boostTick(status) {
   if (!b.enabled || boostBusy) return;
   // The live game mode owns the plan during a session; Batuta steps aside.
   if (require('./livegame.cjs').status().session) return;
+  // On battery the performance plan only drains it: hand the plan back and wait for the charger.
+  if (require('electron').powerMonitor.isOnBatteryPower()) {
+    if (boostPlan) await restorePlan();
+    return;
+  }
   const want = (status.idleMs >= b.idleMin * 60000 ? b.idlePlan : b.activePlan || (await performancePlan()))?.toLowerCase();
   if (!want || want === boostPlan) return;
   boostBusy = true;

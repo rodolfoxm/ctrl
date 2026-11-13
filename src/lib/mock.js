@@ -55,7 +55,7 @@ const state = {
   sweeps: [],
   settings: {
     autoRestorePoint: true, confirmRisky: true, showHidden: false, liveGameMode: false, liveGameModeAsk: true,
-    liveGamePlan: true, liveGameTimer: true, sentinel: true, sentinelRepair: false, startWithWindows: false, closeToTray: true, intro: true, checkUpdates: true, accent: '#c8ff00',
+    liveGamePlan: true, liveGameTimer: true, sentinel: true, sentinelRepair: false, startWithWindows: false, closeToTray: true, virtUse: false, intro: true, checkUpdates: true, accent: '#c8ff00',
   },
   onboarded: (() => {
     try {

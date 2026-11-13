@@ -246,7 +246,7 @@ handle('shell:open', (url) => {
 // ---------- Máquina / catálogo ----------
 handle('machine:get', (force) => machine.get(force));
 handle('catalog:get', async () => {
-  const m = await machine.get().catch(() => null);
+  const m = await gateMachine();
   return {
     modules: catalog.MODULES,
     tweaks: catalog.TWEAKS.map((t) => catalog.publicTweak(t, m)),
@@ -317,11 +317,17 @@ function startSentinel() {
   }, 30 * 60 * 1000);
 }
 
+// The machine as the catalog gates it: hardware plus the user's "WSL, Docker, VMs or dual boot" answer.
+async function gateMachine() {
+  const m = await machine.get().catch(() => null);
+  return m && { ...m, virt: !!store.load().settings.virtUse };
+}
+
 // ---------- Painel ----------
 handle('dashboard:summary', async () => {
   const s = store.load();
   const applied = Object.keys(s.applied);
-  const m = await machine.get().catch(() => null);
+  const m = await gateMachine();
   const eligibleQuick = catalog.QUICK_WINS.filter((id) => !catalog.gate(catalog.findTweak(id), m));
   const live = await engine.checkMany(tweaksFor(eligibleQuick));
   const quickActive = eligibleQuick.filter((id) => live[id] === true);
@@ -366,7 +372,7 @@ function allProfiles() {
   return [...catalog.PROFILES.map((p) => ({ ...p, builtin: true })), ...store.load().customProfiles.map((p) => ({ ...p, builtin: false }))];
 }
 handle('profiles:list', async () => {
-  const m = await machine.get().catch(() => null);
+  const m = await gateMachine();
   const applied = store.load().applied;
   return {
     active: store.load().activeProfile,
@@ -379,7 +385,7 @@ handle('profiles:list', async () => {
 handle('profiles:apply', async (id) => {
   const p = allProfiles().find((x) => x.id === id);
   if (!p) return { ok: false, error: 'Perfil não encontrado.' };
-  const m = await machine.get().catch(() => null);
+  const m = await gateMachine();
   const ids = p.tweaks.filter((tid) => catalog.findTweak(tid) && !catalog.gate(catalog.findTweak(tid), m));
   const res = await engine.runMany(tweaksFor(ids), 'apply', engineOpts(`perfil ${p.name}`), (pr) => send('tweaks:progress', pr));
   store.update((s) => {

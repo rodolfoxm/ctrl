@@ -117,11 +117,15 @@ while (-not $stop.IsCompleted) {
       elseif ($aff -ne $mask) { if ([BatutaNative]::SetAffinity($p.Id, $mask)) { $acts += 'núcleos' } else { $denied = $true } }
     }
     if ($denied -and -not $once.ContainsKey("deny$($p.Id)")) { $once["deny$($p.Id)"] = 1; Emit @{ type = 'denied'; pid = $p.Id; name = $p.Name } }
-    if (-not $once.ContainsKey($p.Id)) {
-      $once[$p.Id] = 1
-      if ($IO[$r.io] -and [BatutaNative]::IoPriority($p.Id, $IO[$r.io])) { $acts += 'E/S' }
-      if ($GPU[$r.gpu] -and [BatutaNative]::GpuPriority($p.Id, $GPU[$r.gpu])) { $acts += 'GPU' }
-      if ($EFF[$r.efficiency] -and [BatutaNative]::Efficiency($p.Id, $EFF[$r.efficiency])) { $acts += 'eficiência' }
+    # Set once per process, but a game that is still starting (or briefly protected) can refuse: what failed is
+    # tried again on the next passes, up to 5 times.
+    if (-not $once.ContainsKey($p.Id)) { $once[$p.Id] = @{ tries = 0; io = -not $IO[$r.io]; gpu = -not $GPU[$r.gpu]; eff = -not $EFF[$r.efficiency] } }
+    $o = $once[$p.Id]
+    if ($o -is [hashtable] -and $o.tries -lt 5 -and -not ($o.io -and $o.gpu -and $o.eff)) {
+      $o.tries++
+      if (-not $o.io -and [BatutaNative]::IoPriority($p.Id, $IO[$r.io])) { $o.io = $true; $acts += 'E/S' }
+      if (-not $o.gpu -and [BatutaNative]::GpuPriority($p.Id, $GPU[$r.gpu])) { $o.gpu = $true; $acts += 'GPU' }
+      if (-not $o.eff -and [BatutaNative]::Efficiency($p.Id, $EFF[$r.efficiency])) { $o.eff = $true; $acts += 'eficiência' }
     }
     if ($acts.Count) { Emit @{ type = 'rule'; pid = $p.Id; name = $p.Name; actions = $acts } }
     $managed += @{ pid = $p.Id; name = $p.Name; auto = [bool]$r.auto; game = [bool]$r.game }

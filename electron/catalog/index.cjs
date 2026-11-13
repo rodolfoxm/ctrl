@@ -204,6 +204,7 @@ function gate(t, m) {
   if (r.minRamGb && m.ramGb < r.minRamGb) return `Requer ${r.minRamGb} GB de RAM ou mais`;
   if (r.hybrid && !m.hybrid) return 'Requer CPU híbrida (Intel 12ª geração ou mais nova)';
   if (r.defender && !m.defender) return 'Requer o Microsoft Defender como antivírus ativo';
+  if (r.noVirt && m.virt) return 'Desligado porque você usa WSL, Docker, máquinas virtuais ou dual boot (Configurações → Comportamento)';
   return null;
 }
 

@@ -181,6 +181,7 @@ $dirs = @($dirs | Select-Object -Unique)`;
     name: 'Menu de boot em 3 segundos',
     description: 'Reduz o tempo de espera do Gerenciador de Inicialização (padrão 30 s quando há mais de um sistema).',
     impact: 'low', risk: 'safe', admin: true, restart: 'none',
+    requires: { noVirt: true }, // with dual boot, 3 s is too short to pick the other system
     script: bcdValue('timeout', '3', '{bootmgr}'),
   },
   {
@@ -217,6 +218,7 @@ $dirs = @($dirs | Select-Object -Unique)`;
     description: 'hypervisorlaunchtype=Off: o Windows roda direto no hardware, sem a camada de virtualização. Pode reduzir latência em jogos.',
     impact: 'medium', risk: 'advanced', admin: true, restart: 'reboot',
     warn: 'Desliga WSL 2, Docker, máquinas virtuais Hyper-V, Windows Sandbox, VBS/HVCI e o subsistema Android.',
+    requires: { noVirt: true }, // WSL 2, Docker and Hyper-V VMs need the hypervisor
     script: bcdValue('hypervisorlaunchtype', 'Off'),
   },
   {

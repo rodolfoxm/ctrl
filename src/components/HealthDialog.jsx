@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Check, CheckCircle2, Undo2, XCircle, Zap } from 'lucide-react';
+import { ArrowRight, Check, CheckCircle2, RotateCw, Undo2, XCircle, Zap } from 'lucide-react';
 import { call } from '../lib/api.js';
 import { useApp } from '../context.jsx';
 import { ActionButton, Badge } from './ui.jsx';
@@ -38,7 +38,10 @@ export default function HealthDialog({ summary, missing, runnable, start = 'diag
     onSummary(after);
     const changed = (res.results || []).filter((r) => r.ok && !r.unchanged);
     const still = changed.filter((r) => after.quickWinsMissing.includes(r.id));
-    setResult({ before, after: after.score, changed, still, failed: res.failed || [] });
+    // Which of the changed tweaks only take effect after a restart (MMCSS, Power Throttling...): measured before
+    // it, the gain looks smaller than it is.
+    const reboot = changed.filter((r) => ['reboot', 'logoff'].includes(r.restart));
+    setResult({ before, after: after.score, changed, still, reboot, restart: res.restart, failed: res.failed || [] });
     setStep('result');
   };
 
@@ -120,6 +123,16 @@ export default function HealthDialog({ summary, missing, runnable, start = 'diag
               {result.changed.length} ajuste(s) aplicado(s) e conferido(s) de novo no sistema.
               {result.after === result.before && ' A nota não mudou: o que desconta pontos agora depende dos outros itens do diagnóstico.'}
             </p>
+            {result.reboot.length > 0 && (
+              <div className="callout warning row" style={{ margin: '0 0 14px', gap: 12 }}>
+                <RotateCw size={18} />
+                <div className="grow">
+                  <strong>{result.reboot.length} ajuste{result.reboot.length > 1 ? 's' : ''} só {result.reboot.length > 1 ? 'valem' : 'vale'} depois de {result.restart === 'logoff' ? 'sair e entrar de novo no Windows' : 'reiniciar o PC'}.</strong>
+                  <div className="small">{result.reboot.map((r) => tweakById.get(r.id)?.name || r.name).join(', ')}. Para medir o ganho num jogo, reinicie antes.</div>
+                </div>
+                <button className="btn btn-sm" onClick={() => call(result.restart === 'logoff' ? 'system:logoff' : 'system:restart')}>{result.restart === 'logoff' ? 'Sair agora' : 'Reiniciar agora'}</button>
+              </div>
+            )}
             {result.still.length > 0 && <p style={{ color: 'var(--warning)' }}>Aplicados, mas o Windows ainda não mostra como ativos (podem pedir reinício): {result.still.map((r) => r.name).join(', ')}.</p>}
             {result.failed.map((f) => (
               <div key={f.id} className="health-row"><XCircle size={18} style={{ color: 'var(--danger)' }} /><div className="grow"><strong>{f.name}</strong><div className="small muted">{f.error || 'Falhou sem mensagem do Windows.'}</div></div></div>
