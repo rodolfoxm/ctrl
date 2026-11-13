@@ -1,6 +1,6 @@
 # Changelog
 
-## Próxima versão
+## 1.6.4 — 13/11/2026
 
 - **Atividade recente sempre em dia.** A Visão geral mostrava "Nenhuma alteração feita ainda" mesmo com ajustes aplicados quando o ctrl ficava aberto na bandeja (por exemplo, iniciado com o Windows): ela guardava a leitura de quando foi aberta. Agora lê de novo quando a janela volta a aparecer e sempre que um ajuste é aplicado ou desfeito.
 
